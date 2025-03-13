@@ -20,13 +20,28 @@ enum UserRole {
 }
 
 model User {
-  id               String    @id @default(uuid())
-  email            String?   @unique
-  telegramId       BigInt    @unique
-  telegramUsername String    @unique
-  phoneNumber      String?
+  id               String     @id @default(uuid()) @db.Uuid
+  email            String?    @unique
+  telegramId       String     @unique @map("telegram_id")
+  telegramUsername String     @unique @map("telegram_username")
+  phoneNumber      String?    @map("phone_number")
   fullname         String?
-  role             UserRole  @default(USER)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime?
+  role             UserRole   @default(USER)
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime?  @map("updated_at")
+  JWTToken         JWTToken[]
+
+  @@map("Users")
+}
+
+model JWTToken {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id") @db.Uuid
+  refreshToken String   @unique @map("refresh_token")
+  fingerprint  String?
+  expiresAt    DateTime @map("expires_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("jwt_tokens")
 }

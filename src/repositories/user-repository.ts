@@ -30,9 +30,10 @@ class UserRepository {
 
   async getUserById(id: User['id']) {
     try {
-      await this.prisma.user.findUnique({ where: { id } })
+      return await this.prisma.user.findUnique({ where: { id } })
     } catch (err) {
       console.error(`Failed to fetch user by id ${id}`)
+      throw new Error(`Failed to fetch user by telegramUsername ${id}`)
     }
   }
 
@@ -57,6 +58,14 @@ class UserRepository {
     } catch (err) {
       console.error(err)
       throw new Error(`Failed to fetch user by telegramId ${telegramId}`)
+    }
+  }
+
+  async getAllUsers(): Promise<User[] | null> {
+    try {
+      return await this.prisma.user.findMany()
+    } catch (err) {
+      throw new Error(`Failed to fetch users. Err: ${err}`)
     }
   }
 }

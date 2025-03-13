@@ -15,8 +15,7 @@ export class UpdateUserFromTgBotEventHandler
 
   async handle(message: UpdateUserFromTgBotEvent): Promise<void> {
     try {
-      const { tgUsername } = message.payload
-      const telegramId = BigInt(message.payload.telegramId)
+      const { tgUsername, telegramId } = message.payload
 
       const user = await userService.getUserByTgId(telegramId)
 
