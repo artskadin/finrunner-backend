@@ -1,7 +1,5 @@
 import { User, Prisma } from '@prisma/client'
 import { userRepository } from '../repositories/user-repository'
-import { OtpInput } from '../schemas/auth-schema'
-import { RegistrationInput } from '../schemas/user-schema'
 
 class UserService {
   async createUser(user: Prisma.UserCreateInput): Promise<User> {
@@ -20,37 +18,37 @@ class UserService {
     }
   }
 
-  async registration(data: RegistrationInput) {
-    // await userRepository.getUserByTelegramId(data.)
-    // await userRepository.createUser(data)
+  async getUserById(id: string) {
+    try {
+      return await userRepository.getUserById(id)
+    } catch (err) {
+      throw err
+    }
   }
-
-  login() {}
-
-  logout() {}
-
-  refresh() {}
-
-  getUserById() {}
 
   async getUserByTgUsername(tgUsername: string) {
     try {
-      const user = await userRepository.getUserByTgUsername(tgUsername)
+      return await userRepository.getUserByTgUsername(tgUsername)
     } catch (err) {
-      // throw new Error(err.message)
+      throw err
     }
   }
 
-  async getUserByTgId(tgId: bigint): Promise<User | null> {
+  async getUserByTgId(tgId: string): Promise<User | null> {
     try {
       return await userRepository.getUserByTelegramId(tgId)
     } catch (err) {
-      console.error(err)
-      throw new Error(`Failed to get user by telegramId ${tgId}`)
+      throw err
     }
   }
 
-  getAllUsers() {}
+  async getAllUsers(): Promise<User[] | null> {
+    try {
+      return await userRepository.getAllUsers()
+    } catch (err) {
+      throw err
+    }
+  }
 }
 
 export const userService = new UserService()

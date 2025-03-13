@@ -12,4 +12,18 @@ export function authRouter(app: FastifyInstance, opts: FastifyPluginOptions) {
     },
     authController.getOtp
   )
+
+  app.post(
+    '/authorize',
+    {
+      schema: {
+        body: $ref('authorizeSchema')
+      }
+    },
+    authController.authorize
+  )
+
+  app.get('/refresh', authController.refresh)
+
+  app.post('/logout', authController.logout)
 }

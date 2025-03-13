@@ -1,23 +1,28 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { GetUserByTgIdInput, RegistrationInput } from '../schemas/user-schema'
+import { GetUserByIdInput, GetUserByTgIdInput } from '../schemas/user-schema'
 import { userService } from '../services/user-service'
+import { ApiError } from '../exceptions/api-error'
 
 class UserController {
-  registration(
+  async getUserById(
     req: FastifyRequest<{
-      Body: RegistrationInput
+      Params: GetUserByIdInput
     }>,
     reply: FastifyReply
   ) {
-    const data = req.body
-    userService.registration(data)
+    try {
+      const { id } = req.params
+      const user = await userService.getUserById(id)
+
+      if (!user) {
+        throw ApiError.UserByUserIdNotFound(id)
+      }
+
+      reply.status(200).send(user)
+    } catch (err) {
+      throw err
+    }
   }
-
-  // login() {}
-
-  // logout() {}
-
-  // refresh() {}
 
   async getUserByTelegramId(
     req: FastifyRequest<{
@@ -25,13 +30,29 @@ class UserController {
     }>,
     reply: FastifyReply
   ) {
-    const data = req.params
-    const result = await userService.getUserByTgId(data.telegramId)
+    try {
+      const { telegramId } = req.params
+      const user = await userService.getUserByTgId(telegramId)
 
-    reply.send(result)
+      if (!user) {
+        throw ApiError.TelegramIdNotFound(telegramId)
+      }
+
+      reply.status(200).send(user)
+    } catch (err) {
+      throw err
+    }
   }
 
-  getAllUsers() {}
+  async getAllUsers(req: FastifyRequest, reply: FastifyReply) {
+    try {
+      const users = await userService.getAllUsers()
+
+      reply.status(200).send(users)
+    } catch (err) {
+      throw err
+    }
+  }
 }
 
 export const userController = new UserController()

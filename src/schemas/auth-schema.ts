@@ -11,9 +11,26 @@ const otpSchema = z
 
 export type OtpInput = z.infer<typeof otpSchema>
 
+const jwtTokenSchema = z.object({
+  userId: z.string(),
+  telegramId: z.string(),
+  userRole: z.string()
+})
+
+export type JWTTokenInput = z.infer<typeof jwtTokenSchema>
+
+const authorizeSchema = z.object({
+  telegramUsername: z.string(),
+  otpCode: z.string().max(6)
+})
+
+export type AuthorizeInput = z.infer<typeof authorizeSchema>
+
 export const { schemas: authSchemas, $ref } = buildJsonSchemas(
   {
-    otpSchema
+    otpSchema,
+    jwtTokenSchema,
+    authorizeSchema
   },
   { $id: 'authSchemas' }
 )

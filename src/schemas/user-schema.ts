@@ -14,17 +14,22 @@ const registrationSchema = z.object({
 })
 
 const getUserByTgIdSchema = z.object({
-  telegramId: z.bigint()
+  telegramId: z.string()
+})
+
+const getUserByIdSchema = z.object({
+  id: z.string()
 })
 
 export type UserInput = z.infer<typeof userSchema>
-export type RegistrationInput = z.infer<typeof registrationSchema>
+export type GetUserByIdInput = z.infer<typeof getUserByIdSchema>
 export type GetUserByTgIdInput = z.infer<typeof getUserByTgIdSchema>
 
 export const { schemas: userSchemas, $ref } = buildJsonSchemas(
   {
     userSchema,
     registrationSchema,
+    getUserByIdSchema,
     getUserByTgIdSchema
   },
   { $id: 'userSchemas' }
