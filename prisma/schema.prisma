@@ -20,16 +20,18 @@ enum UserRole {
 }
 
 model User {
-  id               String     @id @default(uuid()) @db.Uuid
-  email            String?    @unique
-  telegramId       String     @unique @map("telegram_id")
-  telegramUsername String     @unique @map("telegram_username")
-  phoneNumber      String?    @map("phone_number")
+  id               String    @id @default(uuid()) @db.Uuid
+  email            String?   @unique
+  telegramId       String    @unique @map("telegram_id")
+  telegramUsername String    @unique @map("telegram_username")
+  phoneNumber      String?   @map("phone_number")
   fullname         String?
-  role             UserRole   @default(USER)
-  createdAt        DateTime   @default(now()) @map("created_at")
-  updatedAt        DateTime?  @map("updated_at")
-  JWTToken         JWTToken[]
+  role             UserRole  @default(USER)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamp()
+  updatedAt        DateTime? @map("updated_at") @db.Timestamp()
+
+  JWTToken JWTToken[]
+  bids     Bid[]      @relation("UserBids")
 
   @@map("Users")
 }
@@ -43,5 +45,165 @@ model JWTToken {
 
   user User @relation(fields: [userId], references: [id])
 
-  @@map("jwt_tokens")
+  @@map("JWT_tokens")
+}
+
+enum BidStatus {
+  DRAFT
+  PAYMENT
+  UNPAID
+  TRANSACTION_COMPLETE
+  AML_FAILED
+  REPAYMENT
+  COMPLETED
+}
+
+model Bid {
+  id         String    @id @default(uuid()) @db.Uuid
+  fromUserId String    @map("from_user_id") @db.Uuid
+  status     BidStatus @default(DRAFT)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamp()
+  updatedAt  DateTime? @map("updated_at") @db.Timestamp()
+
+  fromUser             User                   @relation("UserBids", fields: [fromUserId], references: [id])
+  payments             Payment[]
+  amlCheck             AMLCheck[]
+  exchangeRatesHistory ExchangeRatesHistory[]
+
+  @@map("Bids")
+}
+
+model Currency {
+  id        String @id @default(uuid()) @db.Uuid
+  fullname  String @unique
+  shortname String @unique
+
+  blockchainNetworks CurrencyBlockchainNetwork[]
+  exchangePairsFrom  ExchangePair[]              @relation("FromCurrency")
+  exchangePairsTo    ExchangePair[]              @relation("ToCurrency")
+  Payment            Payment[]
+
+  @@map("Currencies")
+}
+
+model CurrencyBlockchainNetwork {
+  id                  String @id @default(uuid()) @db.Uuid
+  currencyId          String @map("currency_id") @db.Uuid
+  blockchainNetworkId String @map("blockchain_network_id") @db.Uuid
+
+  currency          Currency          @relation(fields: [currencyId], references: [id])
+  blockChainNetwork BlockchainNetwork @relation(fields: [blockchainNetworkId], references: [id])
+
+  @@map("Currency_blockchain_networks")
+}
+
+model BlockchainNetwork {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  currencies CurrencyBlockchainNetwork[]
+  pockets    Pocket[]
+
+  @@map("Blockchain_networks")
+}
+
+enum PaymentType {
+  ACCEPT
+  PAYOUT
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETE
+  FAILED
+}
+
+model Payment {
+  id              String        @id @default(uuid()) @db.Uuid
+  type            PaymentType
+  status          PaymentStatus
+  amount          Decimal       @db.Decimal
+  bidId           String        @map("bid_id") @db.Uuid
+  currencyId      String        @map("currency_id") @db.Uuid
+  pocketId        String?       @map("pocket_id") @db.Uuid
+  deadline        DateTime      @db.Timestamp()
+  transactionHash String?       @map("transaction_hash")
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamp()
+  updatedAt       DateTime?     @map("updated_at") @db.Timestamp()
+
+  bid      Bid      @relation(fields: [bidId], references: [id])
+  currency Currency @relation(fields: [currencyId], references: [id])
+  pocket   Pocket?  @relation(fields: [pocketId], references: [id])
+
+  @@map("Payments")
+}
+
+enum PocketStatus {
+  NEW
+  USED
+}
+
+model Pocket {
+  id                  String       @id @default(uuid()) @db.Uuid
+  blockchainNetworkId String       @map("blockchain_network_id") @db.Uuid
+  address             String       @unique
+  publicKey           String       @unique
+  privateKey          String       @unique
+  seedPhrase          String?      @unique @map("seed_phrase")
+  status              PocketStatus
+  createdAt           DateTime     @map("created_at") @db.Timestamp()
+  updatedAt           DateTime?    @map("updated_at") @db.Timestamp()
+
+  blockchainNetwork BlockchainNetwork @relation(fields: [blockchainNetworkId], references: [id])
+  payments          Payment[]
+
+  @@map("Pockets")
+}
+
+model ExchangePair {
+  id               String    @id @default(uuid()) @db.Uuid
+  fromCurrencyId   String    @map("from_currency_id") @db.Uuid
+  toCurrencyId     String    @map("to_currency_id") @db.Uuid
+  markupPercentage Decimal   @map("markup_percentage") @db.Decimal()
+  isActive         Boolean   @map("is_active") @db.Boolean
+  createdAt        DateTime  @map("created_at") @db.Timestamp()
+  updatedAt        DateTime? @map("updated_at") @db.Timestamp()
+
+  fromCurrency Currency               @relation("FromCurrency", fields: [fromCurrencyId], references: [id])
+  toCurrency   Currency               @relation("ToCurrency", fields: [toCurrencyId], references: [id])
+  ratesHistory ExchangeRatesHistory[]
+
+  @@map("Exchange_pairs")
+}
+
+model ExchangeRatesHistory {
+  id               String   @id @default(uuid()) @db.Uuid
+  bidId            String   @map("bid_id") @db.Uuid
+  exchangePairId   String   @map("exchange_pair_id") @db.Uuid
+  rate             Decimal  @db.Decimal()
+  markupPercentage Decimal  @map("markup_percentage") @db.Decimal()
+  createdAt        DateTime @map("created_at") @db.Timestamp()
+
+  bid          Bid          @relation(fields: [bidId], references: [id])
+  exchangePair ExchangePair @relation(fields: [exchangePairId], references: [id])
+
+  @@map("Exchange_rates_history")
+}
+
+enum AMLResult {
+  CLEAN
+  DIRTY
+}
+
+model AMLCheck {
+  id        String    @id @default(uuid()) @db.Uuid
+  bidId     String    @map("bid_id") @db.Uuid
+  result    AMLResult
+  source    String?
+  createdAt DateTime  @map("created_at") @db.Timestamp()
+  updatedAt DateTime? @map("updated_at") @db.Timestamp()
+
+  Bid Bid @relation(fields: [bidId], references: [id])
+
+  @@map("AML_checks")
 }
