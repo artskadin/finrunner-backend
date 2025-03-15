@@ -1,13 +1,4 @@
-export type ApiErrorType =
-  | 'UNAUTHORIZED'
-  | 'USER_NOT_FUOND'
-  | 'USER_BY_USER_ID_NOT_FOUND'
-  | 'TG_USERNAME_NOT_FUOND'
-  | 'TG_ID_NOT_FUOND'
-  | 'OTP_CODES_NOT_MATCH'
-  | 'FORBIDDEN'
-  | 'INVALID_ACCESS_TOKEN'
-  | 'INVALID_REFRESH_TOKEN'
+import { ApiErrorType } from './error-types'
 
 export class ApiError extends Error {
   public status: number
@@ -36,6 +27,18 @@ export class ApiError extends Error {
 
   public static InvalidRefreshToken() {
     return new ApiError(401, 'INVALID_REFRESH_TOKEN', 'Invalid refresh token')
+  }
+
+  public static Forbidden(userId: string) {
+    return new ApiError(
+      403,
+      'FORBIDDEN',
+      `Insufficient permissions for user ${userId}`
+    )
+  }
+
+  public static InvalidId(id: string) {
+    return new ApiError(400, 'INVALID_ID', `Invalid id ${id}`)
   }
 
   public static UserByUserIdNotFound(userId: string) {
@@ -71,14 +74,6 @@ export class ApiError extends Error {
       404,
       'OTP_CODES_NOT_MATCH',
       `OTP codes don't match or the lifetime has expired`
-    )
-  }
-
-  public static Forbidden(userId: string) {
-    return new ApiError(
-      403,
-      'FORBIDDEN',
-      `Insufficient permissions for user ${userId}`
     )
   }
 }

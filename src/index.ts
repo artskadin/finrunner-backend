@@ -5,6 +5,7 @@ import { Envs, schema } from './envSettings'
 import { prismaPlugin } from './plugins/prisma-plugin'
 import { userRouter as v1UserRouter } from './router/v1/user-router'
 import { authRouter as v1AuthRouter } from './router/v1/auth-router'
+import { blockchainNetworkRouter as v1BlockchainNetworkRouter } from './router/v1/blockchain-network-router'
 import { kafkaServie } from './services/kafka/kafka-service'
 import { kafkaEventHandlerRegistry } from './services/kafka/event-handler-registry'
 import { UpdateUserFromTgBotEventHandler } from './services/kafka/event-handlers'
@@ -30,6 +31,14 @@ await app.after()
 const envs = app.getEnvs<Envs>()
 
 app.setErrorHandler((error, req, reply) => {
+  if (error.validation && error.validationContext) {
+    return reply.status(400).send({
+      statusCode: 400,
+      error: 'Bad Request',
+      message: error.message
+    })
+  }
+
   if (error instanceof ApiError) {
     reply.status(error.status).send({
       error: {
@@ -74,6 +83,9 @@ registerSchemas(app)
 app.register(prismaPlugin)
 app.register(v1AuthRouter, { prefix: '/api/v1/auth' })
 app.register(v1UserRouter, { prefix: '/api/v1/users' })
+app.register(v1BlockchainNetworkRouter, {
+  prefix: '/api/v1/blockchain-networks'
+})
 
 app.get('/ping', (req, reply) => {
   reply.status(200).send({ message: 'pong' })
