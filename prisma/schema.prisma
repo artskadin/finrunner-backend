@@ -98,8 +98,9 @@ model CurrencyBlockchainNetwork {
 }
 
 model BlockchainNetwork {
-  id   String @id @default(uuid()) @db.Uuid
-  name String
+  id            String @id @default(uuid()) @db.Uuid
+  name          String
+  tokenStandart String @unique @map("token_standart")
 
   currencies CurrencyBlockchainNetwork[]
   pockets    Pocket[]
