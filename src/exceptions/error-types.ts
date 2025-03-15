@@ -9,6 +9,7 @@ export type CommonApiErrorType =
   | 'INVALID_ACCESS_TOKEN'
   | 'INVALID_REFRESH_TOKEN'
   | 'FORBIDDEN'
+  | 'ALREADY_EXISTS'
   | 'INVALID_ID'
   | 'USER_NOT_FUOND'
   | 'USER_BY_USER_ID_NOT_FOUND'

@@ -1,6 +1,7 @@
 import { ApiError } from './api-error'
 import { BlockchainNetworkApiErrorType } from './error-types'
 
+//УДАЛИТЬ???
 export class BlockchainNetworkApiError extends ApiError {
   public type: BlockchainNetworkApiErrorType
 

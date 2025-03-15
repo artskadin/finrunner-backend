@@ -41,6 +41,14 @@ export class ApiError extends Error {
     return new ApiError(400, 'INVALID_ID', `Invalid id ${id}`)
   }
 
+  public static EntityAlreadyExist(entityName: string, field: string) {
+    return new ApiError(
+      400,
+      'ALREADY_EXISTS',
+      `The entity '${entityName}' with field '${field}' already exists`
+    )
+  }
+
   public static UserByUserIdNotFound(userId: string) {
     return new ApiError(
       404,

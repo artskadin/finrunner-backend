@@ -1,22 +1,7 @@
-import { PrismaClient, Prisma } from '@prisma/client'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
-import { BlockchainNetworkApiError } from '../exceptions/blockchain-network-api-error'
-import { ApiError } from '../exceptions/api-error'
+import { Prisma } from '@prisma/client'
+import { BaseRepository } from './base-repository'
 
-class BlockchainNetworkRepository {
-  prisma = new PrismaClient()
-
-  private handlePrismaError(err: unknown, context: string = '') {
-    if (err instanceof PrismaClientKnownRequestError) {
-      switch (err.code) {
-        case 'P2002':
-          throw BlockchainNetworkApiError.NetworkAlreadyExists('tokenStandart')
-        case 'P2023':
-          throw ApiError.InvalidId(context)
-      }
-    }
-  }
-
+class BlockchainNetworkRepository extends BaseRepository {
   async createNetwork(network: Prisma.BlockchainNetworkCreateInput) {
     try {
       return await this.prisma.blockchainNetwork.create({ data: network })

@@ -6,6 +6,7 @@ import { prismaPlugin } from './plugins/prisma-plugin'
 import { userRouter as v1UserRouter } from './router/v1/user-router'
 import { authRouter as v1AuthRouter } from './router/v1/auth-router'
 import { blockchainNetworkRouter as v1BlockchainNetworkRouter } from './router/v1/blockchain-network-router'
+import { currencyRouter as v1CurrencyRouter } from './router/v1/currency-router'
 import { kafkaServie } from './services/kafka/kafka-service'
 import { kafkaEventHandlerRegistry } from './services/kafka/event-handler-registry'
 import { UpdateUserFromTgBotEventHandler } from './services/kafka/event-handlers'
@@ -86,6 +87,7 @@ app.register(v1UserRouter, { prefix: '/api/v1/users' })
 app.register(v1BlockchainNetworkRouter, {
   prefix: '/api/v1/blockchain-networks'
 })
+app.register(v1CurrencyRouter, { prefix: '/api/v1/currencies' })
 
 app.get('/ping', (req, reply) => {
   reply.status(200).send({ message: 'pong' })
