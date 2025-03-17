@@ -1,12 +1,15 @@
 import Fastify from 'fastify'
 import fastifyEnv from '@fastify/env'
 import cookie from '@fastify/cookie'
-import { Envs, schema } from './envSettings'
-import { prismaPlugin } from './plugins/prisma-plugin'
+
 import { userRouter as v1UserRouter } from './router/v1/user-router'
 import { authRouter as v1AuthRouter } from './router/v1/auth-router'
 import { blockchainNetworkRouter as v1BlockchainNetworkRouter } from './router/v1/blockchain-network-router'
 import { currencyRouter as v1CurrencyRouter } from './router/v1/currency-router'
+import { exchangePairRouter as v1ExchangePairRouter } from './router/v1/exchange-pair-router'
+
+import { Envs, schema } from './envSettings'
+import { prismaPlugin } from './plugins/prisma-plugin'
 import { kafkaServie } from './services/kafka/kafka-service'
 import { kafkaEventHandlerRegistry } from './services/kafka/event-handler-registry'
 import { UpdateUserFromTgBotEventHandler } from './services/kafka/event-handlers'
@@ -16,6 +19,7 @@ import { getRedisService } from './services/redis-service'
 import { ApiError } from './exceptions/api-error'
 import { getTokenService } from './services/token-services'
 import { AuthMiddleware } from './middlewares/auth-middleware'
+import { ZodError } from 'zod'
 
 const options = {
   schema,
@@ -34,8 +38,7 @@ const envs = app.getEnvs<Envs>()
 app.setErrorHandler((error, req, reply) => {
   if (error.validation && error.validationContext) {
     return reply.status(400).send({
-      statusCode: 400,
-      error: 'Bad Request',
+      type: 'BAD_REQUEST',
       message: error.message
     })
   }
@@ -88,6 +91,7 @@ app.register(v1BlockchainNetworkRouter, {
   prefix: '/api/v1/blockchain-networks'
 })
 app.register(v1CurrencyRouter, { prefix: '/api/v1/currencies' })
+app.register(v1ExchangePairRouter, { prefix: '/api/v1/exchange-pairs' })
 
 app.get('/ping', (req, reply) => {
   reply.status(200).send({ message: 'pong' })

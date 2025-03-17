@@ -1,5 +1,4 @@
-import { FastifyReply } from 'fastify/types/reply'
-import { FastifyRequest } from 'fastify/types/request'
+import { FastifyRequest, FastifyReply } from 'fastify'
 import {
   CreateCurrencyInput,
   DeleteCurrencyInput,

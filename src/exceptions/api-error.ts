@@ -49,6 +49,18 @@ export class ApiError extends Error {
     )
   }
 
+  public static OneOrMoreRecordsWereRequiredButNotFound(cause: string) {
+    return new ApiError(400, 'NOT_FOUND_NESTED_RECORDS', `${cause}`)
+  }
+
+  public static ForeignKeyConstraintViolated(modelName: string) {
+    return new ApiError(
+      400,
+      'FOREIGN_KEY_CONSTRAINT_VIOLATED',
+      `Foreign key constraint violated`
+    )
+  }
+
   public static UserByUserIdNotFound(userId: string) {
     return new ApiError(
       404,
