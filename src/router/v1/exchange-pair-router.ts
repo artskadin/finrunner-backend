@@ -1,9 +1,5 @@
 import { FastifyInstance, FastifyPluginOptions } from 'fastify'
-import {
-  ZodTypeProvider,
-  serializerCompiler,
-  validatorCompiler
-} from 'fastify-type-provider-zod'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { AuthMiddleware } from '../../middlewares/auth-middleware'
 import {
   createExchangePairSchema,
@@ -20,8 +16,6 @@ export function exchangePairRouter(
   app: FastifyInstance,
   opts: FastifyPluginOptions
 ) {
-  app.setValidatorCompiler(validatorCompiler)
-  app.setSerializerCompiler(serializerCompiler)
   app.addHook('preHandler', AuthMiddleware.authorizeRoles(['ADMIN']))
 
   app.withTypeProvider<ZodTypeProvider>().route({

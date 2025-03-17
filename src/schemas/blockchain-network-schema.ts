@@ -1,31 +1,30 @@
 import { z } from 'zod'
-import { buildJsonSchemas } from 'fastify-zod'
 
-const blockchainNetworkSchema = z.object({
+export const blockchainNetworkSchema = z.object({
   id: z.string(),
   name: z.string(),
   tokenStandart: z.string()
 })
 
-const createBlockchainNetworkSchema = blockchainNetworkSchema.omit({
+export const createBlockchainNetworkSchema = blockchainNetworkSchema.omit({
   id: true
 })
-
-const getblockchainNetworkByIdSchema = blockchainNetworkSchema.pick({
+export const getblockchainNetworkByIdSchema = blockchainNetworkSchema.pick({
   id: true
 })
-
-const updateBlockchainNetworkBodySchema = blockchainNetworkSchema.omit({
+export const updateBlockchainNetworkBodySchema = blockchainNetworkSchema.omit({
   id: true
 })
-
-const updateBlockchainNetworkParamsSchema = blockchainNetworkSchema.pick({
-  id: true
-})
-
-const deleteBlockchainNetworkParamsSchema = blockchainNetworkSchema.pick({
-  id: true
-})
+export const updateBlockchainNetworkParamsSchema = blockchainNetworkSchema.pick(
+  {
+    id: true
+  }
+)
+export const deleteBlockchainNetworkParamsSchema = blockchainNetworkSchema.pick(
+  {
+    id: true
+  }
+)
 
 export type CreateBlockchainNetworkInput = z.infer<
   typeof createBlockchainNetworkSchema
@@ -42,15 +41,3 @@ export type UpdateBlockchainNetworkParamsInput = z.infer<
 export type DeleteBlockchainNetworkInput = z.infer<
   typeof deleteBlockchainNetworkParamsSchema
 >
-
-export const { schemas: blockchainNetworkSchemas, $ref } = buildJsonSchemas(
-  {
-    blockchainNetworkSchema,
-    createBlockchainNetworkSchema,
-    getblockchainNetworkByIdSchema,
-    updateBlockchainNetworkBodySchema,
-    updateBlockchainNetworkParamsSchema,
-    deleteBlockchainNetworkParamsSchema
-  },
-  { $id: 'blockchainNetworkSchemas' }
-)

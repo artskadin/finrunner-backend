@@ -1,6 +1,10 @@
 import Fastify from 'fastify'
 import fastifyEnv from '@fastify/env'
 import cookie from '@fastify/cookie'
+import {
+  serializerCompiler,
+  validatorCompiler
+} from 'fastify-type-provider-zod'
 
 import { userRouter as v1UserRouter } from './router/v1/user-router'
 import { authRouter as v1AuthRouter } from './router/v1/auth-router'
@@ -13,13 +17,11 @@ import { prismaPlugin } from './plugins/prisma-plugin'
 import { kafkaServie } from './services/kafka/kafka-service'
 import { kafkaEventHandlerRegistry } from './services/kafka/event-handler-registry'
 import { UpdateUserFromTgBotEventHandler } from './services/kafka/event-handlers'
-import { registerSchemas } from './schemas'
 import { KafkaTopics } from './services/kafka/kafka-topics'
 import { getRedisService } from './services/redis-service'
 import { ApiError } from './exceptions/api-error'
 import { getTokenService } from './services/token-services'
 import { AuthMiddleware } from './middlewares/auth-middleware'
-import { ZodError } from 'zod'
 
 const options = {
   schema,
@@ -29,6 +31,9 @@ const options = {
 const app = Fastify({
   logger: true
 })
+
+app.setValidatorCompiler(validatorCompiler)
+app.setSerializerCompiler(serializerCompiler)
 
 app.register(cookie)
 app.register(fastifyEnv, options)
@@ -83,7 +88,6 @@ app.addHook('onReady', async () => {
 
 app.addHook('preHandler', AuthMiddleware.authenticate)
 
-registerSchemas(app)
 app.register(prismaPlugin)
 app.register(v1AuthRouter, { prefix: '/api/v1/auth' })
 app.register(v1UserRouter, { prefix: '/api/v1/users' })

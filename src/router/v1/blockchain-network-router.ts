@@ -1,7 +1,15 @@
 import { FastifyInstance, FastifyPluginOptions } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { blockchainNetworkController } from '../../controllers/blockchain-network-controller'
-import { $ref } from '../../schemas/blockchain-network-schema'
 import { AuthMiddleware } from '../../middlewares/auth-middleware'
+import {
+  blockchainNetworkSchema,
+  createBlockchainNetworkSchema,
+  deleteBlockchainNetworkParamsSchema,
+  getblockchainNetworkByIdSchema,
+  updateBlockchainNetworkBodySchema,
+  updateBlockchainNetworkParamsSchema
+} from '../../schemas/blockchain-network-schema'
 
 export function blockchainNetworkRouter(
   app: FastifyInstance,
@@ -9,46 +17,52 @@ export function blockchainNetworkRouter(
 ) {
   app.addHook('preHandler', AuthMiddleware.authorizeRoles(['ADMIN']))
 
-  app.get('/', blockchainNetworkController.getAllNetworks)
-
-  app.get(
-    '/:id',
-    {
-      schema: {
-        params: $ref('getblockchainNetworkByIdSchema')
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: 'GET',
+    url: '/',
+    schema: {
+      response: {
+        200: blockchainNetworkSchema.array()
       }
     },
-    blockchainNetworkController.getNetworkById
-  )
+    handler: blockchainNetworkController.getNetworks
+  })
 
-  app.post(
-    '/',
-    {
-      schema: {
-        body: $ref('createBlockchainNetworkSchema')
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: 'GET',
+    url: '/:id',
+    schema: {
+      params: getblockchainNetworkByIdSchema,
+      response: {
+        200: blockchainNetworkSchema
       }
     },
-    blockchainNetworkController.createNetwork
-  )
+    handler: blockchainNetworkController.getNetworkById
+  })
 
-  app.put(
-    '/:id',
-    {
-      schema: {
-        params: $ref('updateBlockchainNetworkParamsSchema'),
-        body: $ref('updateBlockchainNetworkBodySchema')
-      }
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: 'POST',
+    url: '/',
+    schema: {
+      body: createBlockchainNetworkSchema
     },
-    blockchainNetworkController.updateNetwork
-  )
+    handler: blockchainNetworkController.createNetwork
+  })
 
-  app.delete(
-    '/:id',
-    {
-      schema: {
-        params: $ref('deleteBlockchainNetworkParamsSchema')
-      }
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: 'PUT',
+    url: '/:id',
+    schema: {
+      params: updateBlockchainNetworkParamsSchema,
+      body: updateBlockchainNetworkBodySchema
     },
-    blockchainNetworkController.removeNetwork
-  )
+    handler: blockchainNetworkController.updateNetwork
+  })
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: 'DELETE',
+    url: '/:id',
+    schema: { params: deleteBlockchainNetworkParamsSchema },
+    handler: blockchainNetworkController.removeNetwork
+  })
 }

@@ -7,7 +7,7 @@ import { getTokenService } from './token-services'
 import { userService } from './user-service'
 
 class AuthService {
-  generateOtpCode(length: number = 6): string {
+  private generateOtpCode(length: number = 6): string {
     return Math.random()
       .toString()
       .slice(2, length + 2)
@@ -15,8 +15,7 @@ class AuthService {
 
   async getOtp(tgUsername: string) {
     try {
-      const tgUsernameWithoutAt = tgUsername.slice(1)
-      const user = await userRepository.getUserByTgUsername(tgUsernameWithoutAt)
+      const user = await userRepository.getUserByTgUsername(tgUsername)
 
       const otpCode = this.generateOtpCode()
 
@@ -40,9 +39,8 @@ class AuthService {
   async authorize(data: AuthorizeInput) {
     try {
       const { telegramUsername, otpCode } = data
-      const tgUsernameWithoutAt = telegramUsername.slice(1)
 
-      const user = await userRepository.getUserByTgUsername(tgUsernameWithoutAt)
+      const user = await userRepository.getUserByTgUsername(telegramUsername)
 
       if (!user) {
         throw ApiError.TelegramUsernameNotFound(telegramUsername)

@@ -27,7 +27,7 @@ class CurrencyController {
     }
   }
 
-  async getAllCurrencies(req: FastifyRequest, reply: FastifyReply) {
+  async getCurrencies(req: FastifyRequest, reply: FastifyReply) {
     try {
       const currencies = await currencyService.getAllCurrencies()
 
