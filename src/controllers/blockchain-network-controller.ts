@@ -1,5 +1,4 @@
-import { FastifyReply } from 'fastify/types/reply'
-import { FastifyRequest } from 'fastify/types/request'
+import { FastifyReply, FastifyRequest } from 'fastify'
 import {
   CreateBlockchainNetworkInput,
   DeleteBlockchainNetworkInput,
@@ -28,7 +27,7 @@ class BlockchainNetworkController {
     }
   }
 
-  async getAllNetworks(req: FastifyRequest, reply: FastifyReply) {
+  async getNetworks(req: FastifyRequest, reply: FastifyReply) {
     try {
       const networks = await blockchainNetworkService.getAllNetworks()
 

@@ -1,5 +1,9 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { OtpInput, AuthorizeInput } from '../schemas/auth-schema'
+import {
+  OtpInput,
+  AuthorizeInput,
+  AuthorizeResponse
+} from '../schemas/auth-schema'
 import { authService } from '../services/auth-service'
 import { ApiError } from '../exceptions/api-error'
 
@@ -27,6 +31,12 @@ class AuthController {
         otpCode
       })
 
+      const response: AuthorizeResponse = {
+        message: 'Authorized successfully',
+        id: user.id,
+        accessToken
+      }
+
       reply
         .setCookie('refreshToken', refreshToken, {
           httpOnly: true,
@@ -35,11 +45,7 @@ class AuthController {
           maxAge: 604800
         })
         .status(200)
-        .send({
-          message: 'Authorized successfully',
-          accessToken,
-          userId: user.id
-        })
+        .send(response)
     } catch (err) {
       throw err
     }
@@ -56,6 +62,12 @@ class AuthController {
       const { userId, accessToken, refreshToken } =
         await authService.refresh(token)
 
+      const response: AuthorizeResponse = {
+        message: 'Token refreshed successfully',
+        id: userId,
+        accessToken
+      }
+
       reply
         .setCookie('refreshToken', refreshToken, {
           httpOnly: true,
@@ -64,11 +76,7 @@ class AuthController {
           maxAge: 604800
         })
         .status(200)
-        .send({
-          message: 'Token refreshed successfully',
-          accessToken,
-          userId
-        })
+        .send(response)
     } catch (err) {
       throw err
     }

@@ -44,7 +44,7 @@ class UserController {
     }
   }
 
-  async getAllUsers(req: FastifyRequest, reply: FastifyReply) {
+  async getUsers(req: FastifyRequest, reply: FastifyReply) {
     try {
       const users = await userService.getAllUsers()
 

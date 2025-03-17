@@ -152,7 +152,7 @@ model Pocket {
   privateKey          String       @unique
   seedPhrase          String?      @unique @map("seed_phrase")
   status              PocketStatus
-  createdAt           DateTime     @map("created_at") @db.Timestamp()
+  createdAt           DateTime     @default(now()) @map("created_at") @db.Timestamp()
   updatedAt           DateTime?    @map("updated_at") @db.Timestamp()
 
   blockchainNetwork BlockchainNetwork @relation(fields: [blockchainNetworkId], references: [id])
@@ -166,14 +166,15 @@ model ExchangePair {
   fromCurrencyId   String    @map("from_currency_id") @db.Uuid
   toCurrencyId     String    @map("to_currency_id") @db.Uuid
   markupPercentage Decimal   @map("markup_percentage") @db.Decimal()
-  isActive         Boolean   @map("is_active") @db.Boolean
-  createdAt        DateTime  @map("created_at") @db.Timestamp()
+  isActive         Boolean   @default(false) @map("is_active") @db.Boolean
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamp()
   updatedAt        DateTime? @map("updated_at") @db.Timestamp()
 
   fromCurrency Currency               @relation("FromCurrency", fields: [fromCurrencyId], references: [id])
   toCurrency   Currency               @relation("ToCurrency", fields: [toCurrencyId], references: [id])
   ratesHistory ExchangeRatesHistory[]
 
+  @@unique([fromCurrencyId, toCurrencyId])
   @@map("Exchange_pairs")
 }
 
@@ -201,7 +202,7 @@ model AMLCheck {
   bidId     String    @map("bid_id") @db.Uuid
   result    AMLResult
   source    String?
-  createdAt DateTime  @map("created_at") @db.Timestamp()
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp()
   updatedAt DateTime? @map("updated_at") @db.Timestamp()
 
   Bid Bid @relation(fields: [bidId], references: [id])

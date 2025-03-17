@@ -1,6 +1,17 @@
-import { FastifyPluginOptions } from 'fastify'
-import { FastifyInstance } from 'fastify/types/instance'
-import { $ref } from '../../schemas/currency-schema'
+import { FastifyPluginOptions, FastifyInstance } from 'fastify'
+import {
+  serializerCompiler,
+  validatorCompiler,
+  ZodTypeProvider
+} from 'fastify-type-provider-zod'
+import {
+  createCurrencySchema,
+  currencySchema,
+  deleteCurrencySchema,
+  getCurrencyByIdSchema,
+  updateCurrencyBodySchema,
+  updateCurrencyParamsSchema
+} from '../../schemas/currency-schema'
 import { currencyController } from '../../controllers/currency-controller'
 import { AuthMiddleware } from '../../middlewares/auth-middleware'
 
@@ -10,42 +21,60 @@ export function currencyRouter(
 ) {
   app.addHook('preHandler', AuthMiddleware.authorizeRoles(['ADMIN']))
 
-  app.get('/', currencyController.getAllCurrencies)
-
-  app.get(
-    '/:id',
-    {
-      schema: {
-        params: $ref('getCurrencyByIdSchema')
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: 'GET',
+    url: '/',
+    schema: {
+      response: {
+        200: currencySchema.array()
       }
     },
-    currencyController.getCurrencyById
-  )
+    handler: currencyController.getCurrencies
+  })
 
-  app.post(
-    '/',
-    {
-      schema: {
-        body: $ref('createCurrencySchema')
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: 'GET',
+    url: '/:id',
+    schema: {
+      params: getCurrencyByIdSchema,
+      response: {
+        200: currencySchema
       }
     },
-    currencyController.createCurrency
-  )
+    handler: currencyController.getCurrencyById
+  })
 
-  app.put(
-    '/:id',
-    {
-      schema: {
-        params: $ref('updateCurrencyParamsSchema'),
-        body: $ref('updateCurrencyBodySchema')
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: 'POST',
+    url: '/',
+    schema: {
+      body: createCurrencySchema,
+      response: {
+        201: currencySchema
       }
     },
-    currencyController.updateCurrency
-  )
+    handler: currencyController.createCurrency
+  })
 
-  app.delete(
-    '/:id',
-    { schema: { params: $ref('deleteCurrencySchema') } },
-    currencyController.removeCurrency
-  )
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: 'PUT',
+    url: '/:id',
+    schema: {
+      params: updateCurrencyParamsSchema,
+      body: updateCurrencyBodySchema,
+      response: {
+        200: currencySchema
+      }
+    },
+    handler: currencyController.updateCurrency
+  })
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: 'DELETE',
+    url: '/:id',
+    schema: {
+      params: deleteCurrencySchema
+    },
+    handler: currencyController.removeCurrency
+  })
 }

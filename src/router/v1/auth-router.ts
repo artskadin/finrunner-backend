@@ -1,29 +1,48 @@
 import { FastifyInstance, FastifyPluginOptions } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { authController } from '../../controllers/auth-controller'
-import { $ref } from '../../schemas/auth-schema'
+import {
+  authorizeResponseSchema,
+  authorizeSchema,
+  otpSchema
+} from '../../schemas/auth-schema'
 
 export function authRouter(app: FastifyInstance, opts: FastifyPluginOptions) {
-  app.post(
-    '/otp',
-    {
-      schema: {
-        body: $ref('otpSchema')
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: 'POST',
+    url: '/otp',
+    schema: {
+      body: otpSchema
+    },
+    handler: authController.getOtp
+  })
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: 'POST',
+    url: '/authorize',
+    schema: {
+      body: authorizeSchema,
+      response: {
+        200: authorizeResponseSchema
       }
     },
-    authController.getOtp
-  )
+    handler: authController.authorize
+  })
 
-  app.post(
-    '/authorize',
-    {
-      schema: {
-        body: $ref('authorizeSchema')
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: 'GET',
+    url: '/refresh',
+    schema: {
+      response: {
+        200: authorizeResponseSchema
       }
     },
-    authController.authorize
-  )
+    handler: authController.refresh
+  })
 
-  app.get('/refresh', authController.refresh)
-
-  app.post('/logout', authController.logout)
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: 'POST',
+    url: '/logout',
+    handler: authController.logout
+  })
 }

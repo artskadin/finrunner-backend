@@ -1,36 +1,25 @@
-import { buildJsonSchemas } from 'fastify-zod'
 import { z } from 'zod'
+import { userSchema } from './user-schema'
+import { UserRole } from '@prisma/client'
 
-const otpSchema = z
-  .object({
-    telegramUsername: z
-      .string()
-      .regex(/^@[a-zA-Z0-9_]{4,31}$/, { message: 'Invalid telegram username' })
+export const otpSchema = userSchema.pick({ telegramUsername: true })
+export const jwtTokenSchema = userSchema
+  .pick({
+    telegramId: true
   })
-  .describe('otpSchema')
+  .extend({
+    userId: z.string().uuid(),
+    userRole: z.nativeEnum(UserRole)
+  })
+export const authorizeSchema = userSchema
+  .pick({ telegramUsername: true })
+  .extend({ otpCode: z.string().max(6) })
+export const authorizeResponseSchema = userSchema.pick({ id: true }).extend({
+  message: z.string(),
+  accessToken: z.string().jwt()
+})
 
 export type OtpInput = z.infer<typeof otpSchema>
-
-const jwtTokenSchema = z.object({
-  userId: z.string(),
-  telegramId: z.string(),
-  userRole: z.string()
-})
-
 export type JWTTokenInput = z.infer<typeof jwtTokenSchema>
-
-const authorizeSchema = z.object({
-  telegramUsername: z.string(),
-  otpCode: z.string().max(6)
-})
-
 export type AuthorizeInput = z.infer<typeof authorizeSchema>
-
-export const { schemas: authSchemas, $ref } = buildJsonSchemas(
-  {
-    otpSchema,
-    jwtTokenSchema,
-    authorizeSchema
-  },
-  { $id: 'authSchemas' }
-)
+export type AuthorizeResponse = z.infer<typeof authorizeResponseSchema>
