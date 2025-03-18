@@ -11,6 +11,7 @@ import { authRouter as v1AuthRouter } from './router/v1/auth-router'
 import { blockchainNetworkRouter as v1BlockchainNetworkRouter } from './router/v1/blockchain-network-router'
 import { currencyRouter as v1CurrencyRouter } from './router/v1/currency-router'
 import { exchangePairRouter as v1ExchangePairRouter } from './router/v1/exchange-pair-router'
+import { bidRouter as v1BidRouter } from './router/v1/bid-router'
 
 import { Envs, schema } from './envSettings'
 import { prismaPlugin } from './plugins/prisma-plugin'
@@ -96,6 +97,7 @@ app.register(v1BlockchainNetworkRouter, {
 })
 app.register(v1CurrencyRouter, { prefix: '/api/v1/currencies' })
 app.register(v1ExchangePairRouter, { prefix: '/api/v1/exchange-pairs' })
+app.register(v1BidRouter, { prefix: '/api/v1/bids' })
 
 app.get('/ping', (req, reply) => {
   reply.status(200).send({ message: 'pong' })
