@@ -102,8 +102,8 @@ model BlockchainNetwork {
   name          String
   tokenStandart String @unique @map("token_standart")
 
-  currencies CurrencyBlockchainNetwork[]
-  pockets    Pocket[]
+  currencies   CurrencyBlockchainNetwork[]
+  cryptoWallet CryptoWallet[]
 
   @@map("Blockchain_networks")
 }
@@ -126,39 +126,40 @@ model Payment {
   amount          Decimal       @db.Decimal
   bidId           String        @map("bid_id") @db.Uuid
   currencyId      String        @map("currency_id") @db.Uuid
-  pocketId        String?       @map("pocket_id") @db.Uuid
+  cryptoWalletId  String?       @unique @map("crypto_wallet_id") @db.Uuid
   deadline        DateTime      @db.Timestamp()
   transactionHash String?       @map("transaction_hash")
   createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamp()
   updatedAt       DateTime?     @map("updated_at") @db.Timestamp()
 
-  bid      Bid      @relation(fields: [bidId], references: [id])
-  currency Currency @relation(fields: [currencyId], references: [id])
-  pocket   Pocket?  @relation(fields: [pocketId], references: [id])
+  bid          Bid           @relation(fields: [bidId], references: [id])
+  currency     Currency      @relation(fields: [currencyId], references: [id])
+  cryptoWallet CryptoWallet? @relation(fields: [cryptoWalletId], references: [id])
 
   @@map("Payments")
 }
 
-enum PocketStatus {
+enum WalletStatus {
   NEW
   USED
 }
 
-model Pocket {
+model CryptoWallet {
   id                  String       @id @default(uuid()) @db.Uuid
   blockchainNetworkId String       @map("blockchain_network_id") @db.Uuid
   address             String       @unique
   publicKey           String       @unique
   privateKey          String       @unique
   seedPhrase          String?      @unique @map("seed_phrase")
-  status              PocketStatus
+  status              WalletStatus @default(NEW)
   createdAt           DateTime     @default(now()) @map("created_at") @db.Timestamp()
   updatedAt           DateTime?    @map("updated_at") @db.Timestamp()
 
-  blockchainNetwork BlockchainNetwork @relation(fields: [blockchainNetworkId], references: [id])
-  payments          Payment[]
+  blockchainNetwork BlockchainNetwork           @relation(fields: [blockchainNetworkId], references: [id])
+  payment           Payment?
+  encryptionKey     CryptoWalletEncryptionKey[]
 
-  @@map("Pockets")
+  @@map("Crypto_wallets")
 }
 
 model ExchangePair {
@@ -208,4 +209,16 @@ model AMLCheck {
   Bid Bid @relation(fields: [bidId], references: [id])
 
   @@map("AML_checks")
+}
+
+model CryptoWalletEncryptionKey {
+  id             String   @id @default(uuid()) @db.Uuid
+  cryptoWalletId String   @map("crypto_wallet_id") @db.Uuid
+  iv             String
+  fieldName      String   @map("field_name")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamp()
+
+  CryptoWallet CryptoWallet @relation(fields: [cryptoWalletId], references: [id])
+
+  @@map("Crypto_wallet_encryption_keys")
 }

@@ -12,6 +12,7 @@ import { blockchainNetworkRouter as v1BlockchainNetworkRouter } from './router/v
 import { currencyRouter as v1CurrencyRouter } from './router/v1/currency-router'
 import { exchangePairRouter as v1ExchangePairRouter } from './router/v1/exchange-pair-router'
 import { bidRouter as v1BidRouter } from './router/v1/bid-router'
+import { cryptoWalletRouter as v1CryptoWalletRouter } from './router/v1/crypto-wallet-router'
 
 import { Envs, schema } from './envSettings'
 import { prismaPlugin } from './plugins/prisma-plugin'
@@ -23,6 +24,7 @@ import { getRedisService } from './services/redis-service'
 import { ApiError } from './exceptions/api-error'
 import { getTokenService } from './services/token-services'
 import { AuthMiddleware } from './middlewares/auth-middleware'
+import { getEncryptionService } from './services/encryption-service'
 
 const options = {
   schema,
@@ -73,6 +75,7 @@ app.addHook('onReady', async () => {
   try {
     const redisService = getRedisService(envs)
     const tokenService = getTokenService(envs)
+    const encryptionService = getEncryptionService(envs)
 
     kafkaEventHandlerRegistry.registerHandler(
       new UpdateUserFromTgBotEventHandler()
@@ -98,8 +101,9 @@ app.register(v1BlockchainNetworkRouter, {
 app.register(v1CurrencyRouter, { prefix: '/api/v1/currencies' })
 app.register(v1ExchangePairRouter, { prefix: '/api/v1/exchange-pairs' })
 app.register(v1BidRouter, { prefix: '/api/v1/bids' })
+// app.register(v1CryptoWalletRouter, { prefix: '/api/v1/crypto-wallets' })
 
-app.get('/ping', (req, reply) => {
+app.get('/ping', async (req, reply) => {
   reply.status(200).send({ message: 'pong' })
 })
 
