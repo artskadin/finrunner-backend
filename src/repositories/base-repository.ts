@@ -8,7 +8,7 @@ type ErrorMeta = {
 }
 
 export class BaseRepository {
-  protected prisma = new PrismaClient()
+  protected readonly prisma = new PrismaClient()
 
   protected handlePrismaError(err: unknown, context: string = '') {
     console.error(err)
