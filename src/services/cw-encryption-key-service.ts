@@ -1,7 +1,12 @@
 import { Prisma } from '@prisma/client'
 import { cryptoWalletEncryptionKeyRepository } from '../repositories/cw-encryption-key-repository'
+import { BaseService } from './base-service'
 
-class CryptoWalletEncryptionKeyService {
+/**
+ * Сервис для работы с шифрованием private data у кошельков.
+ * Пока не используется
+ */
+class CryptoWalletEncryptionKeyService extends BaseService {
   async createKey(key: Prisma.CryptoWalletEncryptionKeyUncheckedCreateInput) {
     try {
       return await cryptoWalletEncryptionKeyRepository.createKey({
@@ -9,7 +14,7 @@ class CryptoWalletEncryptionKeyService {
         CryptoWallet: { connect: { id: key.cryptoWalletId } }
       })
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 
@@ -17,7 +22,7 @@ class CryptoWalletEncryptionKeyService {
     try {
       return await cryptoWalletEncryptionKeyRepository.getKeyById(id)
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 
@@ -27,7 +32,7 @@ class CryptoWalletEncryptionKeyService {
         cryptoWalletId
       )
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 }

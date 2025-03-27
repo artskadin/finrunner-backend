@@ -1,7 +1,11 @@
 import { Prisma } from '@prisma/client'
 import { exchangePairsRepository } from '../repositories/exchange-pair-repository'
+import { BaseService } from './base-service'
 
-class ExchangePairService {
+/**
+ * Сервис для работы с обменными парами
+ */
+class ExchangePairService extends BaseService {
   async createPair(pair: Prisma.ExchangePairUncheckedCreateInput) {
     try {
       const { fromCurrencyId, toCurrencyId, markupPercentage } = pair
@@ -12,7 +16,7 @@ class ExchangePairService {
         markupPercentage
       })
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 
@@ -20,7 +24,7 @@ class ExchangePairService {
     try {
       return await exchangePairsRepository.getPairs()
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 
@@ -28,7 +32,7 @@ class ExchangePairService {
     try {
       return await exchangePairsRepository.getPairById(id)
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 
@@ -36,7 +40,7 @@ class ExchangePairService {
     try {
       return await exchangePairsRepository.updatePair(id, pair)
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 
@@ -44,7 +48,7 @@ class ExchangePairService {
     try {
       return await exchangePairsRepository.removePair(id)
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 }

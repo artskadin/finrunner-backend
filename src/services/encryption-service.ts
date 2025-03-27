@@ -1,11 +1,17 @@
 import crypto from 'crypto'
 import { Envs } from '../envSettings'
+import { BaseService } from './base-service'
 
-class EncryptionService {
+/**
+ * Сервис для (де)шифрования данных
+ */
+class EncryptionService extends BaseService {
   private static instance: EncryptionService | null = null
   private encryptionKey: Buffer
 
   constructor(envs: Envs) {
+    super()
+
     this.encryptionKey = Buffer.from(envs.ENCRYPTION_KEY, 'hex')
   }
 

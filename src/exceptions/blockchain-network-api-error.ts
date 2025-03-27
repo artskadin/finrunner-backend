@@ -1,7 +1,6 @@
 import { ApiError } from './api-error'
 import { BlockchainNetworkApiErrorType } from './error-types'
 
-//УДАЛИТЬ???
 export class BlockchainNetworkApiError extends ApiError {
   public type: BlockchainNetworkApiErrorType
 
@@ -28,6 +27,14 @@ export class BlockchainNetworkApiError extends ApiError {
       400,
       'ALREADY_EXISTS',
       `Blockchain network with property '${prop}' already exists`
+    )
+  }
+
+  public static InvalidBlockchainNetworkName(networkName: string) {
+    return new BlockchainNetworkApiError(
+      400,
+      'INVALID_BLOCKCHAIN_NETWORK_NAME',
+      `Invalid blockchain network name '${networkName}'`
     )
   }
 }

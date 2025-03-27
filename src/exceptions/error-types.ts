@@ -3,6 +3,7 @@ export type ApiErrorType = CommonApiErrorType | BlockchainNetworkApiErrorType
 export type BlockchainNetworkApiErrorType =
   | 'NETWORK_NOT_FOUND'
   | 'ALREADY_EXISTS'
+  | 'INVALID_BLOCKCHAIN_NETWORK_NAME'
 
 export type CommonApiErrorType =
   | 'BAD_REQUEST'
