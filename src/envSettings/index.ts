@@ -36,6 +36,15 @@ export const schema = {
     ['ENCRYPTION_KEY']: {
       type: 'string',
       default: 'jojo'
+    },
+    ['ALCHEMY_API_KEY']: {
+      type: 'string'
+    },
+    ['ETH_MAINNET_PROVIDER_RPC_URL']: {
+      type: 'string'
+    },
+    ['ETH_TESTNET_PROVIDER_RPC_URL']: {
+      type: 'string'
     }
   }
 }
@@ -48,4 +57,7 @@ export type Envs = {
   JWT_ACCESS_SECRET: string
   JWT_REFRESH_SECRET: string
   ENCRYPTION_KEY: string
+  ALCHEMY_API_KEY: string
+  ETH_MAINNET_PROVIDER_RPC_URL: string
+  ETH_TESTNET_PROVIDER_RPC_URL: string
 }

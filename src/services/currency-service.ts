@@ -1,12 +1,16 @@
 import { Prisma } from '@prisma/client'
 import { currencyRepository } from '../repositories/currency-repository'
+import { BaseService } from './base-service'
 
-class CurrencyService {
+/**
+ * Сервис для работы с разными валютами
+ */
+class CurrencyService extends BaseService {
   async createCurrency(currency: Prisma.CurrencyCreateInput) {
     try {
       return await currencyRepository.createCurrency(currency)
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 
@@ -14,7 +18,7 @@ class CurrencyService {
     try {
       return await currencyRepository.getAllCurrencies()
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 
@@ -22,7 +26,7 @@ class CurrencyService {
     try {
       return await currencyRepository.getCurrencyById(id)
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 
@@ -30,7 +34,7 @@ class CurrencyService {
     try {
       return await currencyRepository.updateCurrency(id, currency)
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 
@@ -38,7 +42,7 @@ class CurrencyService {
     try {
       return await currencyRepository.removeCurrency(id)
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 }

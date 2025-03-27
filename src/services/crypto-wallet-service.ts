@@ -1,8 +1,13 @@
-import { Prisma } from '@prisma/client'
+import { CryptoWallet, Prisma } from '@prisma/client'
 import { cryptoWalletRepository } from '../repositories/crypto-wallet-repository'
 import { getEncryptionService } from './encryption-service'
+import { BaseService } from './base-service'
+import { cryptoWalletEncryptionKeyService } from './cw-encryption-key-service'
 
-class CryptoWalletService {
+/**
+ * Сервис для работы с крипто кошельками
+ */
+class CryptoWalletService extends BaseService {
   async createWallet(wallet: Prisma.CryptoWalletUncheckedCreateInput) {
     try {
       const {
@@ -39,14 +44,27 @@ class CryptoWalletService {
         encryptionKeys
       })
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 
-  async getWalletById(id: string) {
+  async getWalletById({
+    id,
+    needDescrypt
+  }: {
+    id: string
+    needDescrypt?: boolean
+  }) {
     try {
+      const wallet = await cryptoWalletRepository.getWalletById(id)
+
+      if (wallet && needDescrypt) {
+        return this.decryptWallet(wallet)
+      }
+
+      return wallet
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 
@@ -54,6 +72,42 @@ class CryptoWalletService {
     try {
     } catch (err) {
       throw err
+    }
+  }
+
+  private async decryptWallet(wallet: CryptoWallet) {
+    try {
+      const encryptionService = getEncryptionService()
+
+      const keys =
+        await cryptoWalletEncryptionKeyService.getKeysByCryptoWalletId(
+          wallet.id
+        )
+
+      if (!keys) {
+        throw new Error(`Failed to find keys for wallet with id '${wallet.id}'`)
+      }
+
+      let descyptedFields: Record<string, string> = {}
+
+      for (let key of keys) {
+        const field = wallet[key.fieldName as keyof CryptoWallet]?.toString()
+
+        if (!field) {
+          throw new Error(
+            `Failed to define field '${key.fieldName}' while decrypting wallet field`
+          )
+        }
+
+        const decryptedValue = encryptionService.decrypt(field, key.iv)
+        descyptedFields[key.fieldName] = decryptedValue
+      }
+
+      const decryptedWallet = { ...wallet, ...descyptedFields }
+
+      return decryptedWallet
+    } catch (err) {
+      this.handleError(err)
     }
   }
 }

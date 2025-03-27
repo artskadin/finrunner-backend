@@ -1,12 +1,16 @@
 import { ApiError } from '../exceptions/api-error'
 import { userRepository } from '../repositories/user-repository'
 import { AuthorizeInput } from '../schemas/auth-schema'
+import { BaseService } from './base-service'
 import { getRedisService } from './redis-service'
 import { tgBotService } from './tgbot-service'
 import { getTokenService } from './token-services'
 import { userService } from './user-service'
 
-class AuthService {
+/**
+ * Сервис для работы с авторизацией пользователей
+ */
+class AuthService extends BaseService {
   private generateOtpCode(length: number = 6): string {
     return Math.random()
       .toString()
@@ -32,7 +36,7 @@ class AuthService {
 
       throw ApiError.TelegramUsernameNotFound(tgUsername)
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 
@@ -67,7 +71,7 @@ class AuthService {
 
       return { user, accessToken, refreshToken }
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 
@@ -103,7 +107,7 @@ class AuthService {
 
       return { userId: validatedToken.userId, accessToken, refreshToken }
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 
@@ -113,7 +117,7 @@ class AuthService {
 
       await tokenService.removeToken(token)
     } catch (err) {
-      throw err
+      this.handleError(err)
     }
   }
 }

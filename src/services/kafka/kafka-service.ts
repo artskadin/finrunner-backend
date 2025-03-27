@@ -2,15 +2,19 @@ import { Kafka, Producer, Consumer } from 'kafkajs'
 import { KafkaEvent } from './event-types'
 import { kafkaEventHandlerRegistry } from './event-handler-registry'
 import { KafkaTopics } from './kafka-topics'
+import { BaseService } from '../base-service'
 
-class KafkaService {
+class KafkaService extends BaseService {
   private static instance: KafkaService | null = null
   private kafka: Kafka
   private producer: Producer
   private consumer: Consumer
   private isConnected: boolean = false
+  private subscribedTopics: Set<KafkaTopics> = new Set()
 
   private constructor(brokers: string[], clientId: string, groupId: string) {
+    super()
+
     this.kafka = new Kafka({
       clientId,
       brokers
@@ -72,22 +76,35 @@ class KafkaService {
       throw new Error('Kafka is not connected. Call connect() first')
     }
 
+    if (this.subscribedTopics.has(topic)) {
+      console.warn(
+        `Already subscribed to topic: ${topic}. Ignoring duplicate subscription`
+      )
+      return
+    }
+
     try {
       await this.consumer.subscribe({ topic, fromBeginning: true })
 
       await this.consumer.run({
         eachMessage: async ({ topic, partition, message }) => {
-          const data = JSON.parse(message.value!.toString()) as KafkaEvent
+          try {
+            const data = JSON.parse(message.value!.toString()) as KafkaEvent
 
-          const handler = kafkaEventHandlerRegistry.getHandler(data.type)
+            const handler = kafkaEventHandlerRegistry.getHandler(data.type)
 
-          if (handler) {
-            await handler.handle(data)
+            if (handler) {
+              await handler.handle(data)
+            }
+          } catch (err) {
+            this.handleError(err)
           }
         }
       })
+
+      this.subscribedTopics.add(topic)
     } catch (err) {
-      throw err
+      this.handleError(`Failed to subscribe to topic: ${topic}. Error: ${err}`)
     }
   }
 
@@ -103,8 +120,7 @@ class KafkaService {
 
       console.log('Kafka disconnected successfully')
     } catch (err) {
-      console.error('Failed to disconnect from Kafka', err)
-      throw err
+      this.handleError(`Failed to disconnect from Kafka. Error: ${err}`)
     }
   }
 }

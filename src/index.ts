@@ -25,6 +25,10 @@ import { ApiError } from './exceptions/api-error'
 import { getTokenService } from './services/token-services'
 import { AuthMiddleware } from './middlewares/auth-middleware'
 import { getEncryptionService } from './services/encryption-service'
+import { BlockchainManager } from './blockchain-manager'
+import { Blockchain } from './blockchain-manager/blockchain-manager'
+import { CreateWalletEventHandler } from './services/kafka/events-handlers/create-wallet-event-handler'
+import { env } from './envSettings/env'
 
 const options = {
   schema,
@@ -77,11 +81,12 @@ app.addHook('onReady', async () => {
     const tokenService = getTokenService(envs)
     const encryptionService = getEncryptionService(envs)
 
+    await kafkaServie.connect()
+
     kafkaEventHandlerRegistry.registerHandler(
       new UpdateUserFromTgBotEventHandler()
     )
-
-    await kafkaServie.connect()
+    kafkaEventHandlerRegistry.registerHandler(new CreateWalletEventHandler())
 
     kafkaServie.consume(KafkaTopics.UserEvents)
   } catch (err) {
@@ -104,6 +109,18 @@ app.register(v1BidRouter, { prefix: '/api/v1/bids' })
 // app.register(v1CryptoWalletRouter, { prefix: '/api/v1/crypto-wallets' })
 
 app.get('/ping', async (req, reply) => {
+  // const manager = new BlockchainManager({
+  //   chainType: 'testnet',
+  //   apiKey: env.ALCHEMY_API_KEY,
+  //   rpcUrl: env.ETH_TESTNET_PROVIDER_RPC_URL
+  // })
+
+  // const balance = await manager.getWalletBalance(
+  //   Blockchain.ETHEREUM,
+  //   '0xa949Bb82473Ff96c911BE8298A28FC3EBC942F4c'
+  // )
+  // console.log({ balance })
+
   reply.status(200).send({ message: 'pong' })
 })
 
@@ -118,3 +135,8 @@ const start = async () => {
 }
 
 start()
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception!!!')
+  console.error(err)
+})

@@ -30,8 +30,16 @@ export type SendOtpToUserEvent = {
   }
 }
 
+export type CreateWalletEvent = {
+  type: 'CREATE_WALLET_EVENT'
+  payload: {
+    blockchainNetworkId: string
+  }
+}
+
 export type KafkaEvent =
   | UpdateUserFromTgBotEvent
   | UserCreatedFromTgBotEvent
   | UserUpdatedFromTgBotEvent
   | SendOtpToUserEvent
+  | CreateWalletEvent
