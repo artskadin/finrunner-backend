@@ -1,4 +1,8 @@
-import { FastifyPluginOptions, FastifyInstance } from 'fastify'
+import {
+  FastifyPluginOptions,
+  FastifyInstance,
+  HookHandlerDoneFunction
+} from 'fastify'
 import {
   serializerCompiler,
   validatorCompiler,
@@ -14,10 +18,15 @@ import {
 } from '../../schemas/currency-schema'
 import { currencyController } from '../../controllers/currency-controller'
 import { AuthMiddleware } from '../../middlewares/auth-middleware'
+import {
+  apiErrorResponseSchema,
+  internalServerErrorResponseSchema
+} from '../../schemas/api-error-schema'
 
 export function currencyRouter(
   app: FastifyInstance,
-  opts: FastifyPluginOptions
+  opts: FastifyPluginOptions,
+  done: HookHandlerDoneFunction
 ) {
   app.addHook('preHandler', AuthMiddleware.authorizeRoles(['ADMIN']))
 
@@ -25,8 +34,14 @@ export function currencyRouter(
     method: 'GET',
     url: '/',
     schema: {
+      description: 'Get all available currencies',
+      tags: ['Currencies'],
       response: {
-        200: currencySchema.array()
+        200: currencySchema.array(),
+        400: apiErrorResponseSchema,
+        401: apiErrorResponseSchema,
+        404: apiErrorResponseSchema,
+        500: internalServerErrorResponseSchema
       }
     },
     handler: currencyController.getCurrencies
@@ -36,9 +51,15 @@ export function currencyRouter(
     method: 'GET',
     url: '/:id',
     schema: {
+      description: 'Get currency by id',
+      tags: ['Currencies'],
       params: getCurrencyByIdSchema,
       response: {
-        200: currencySchema
+        200: currencySchema,
+        400: apiErrorResponseSchema,
+        401: apiErrorResponseSchema,
+        404: apiErrorResponseSchema,
+        500: internalServerErrorResponseSchema
       }
     },
     handler: currencyController.getCurrencyById
@@ -48,9 +69,15 @@ export function currencyRouter(
     method: 'POST',
     url: '/',
     schema: {
+      description: 'Create currency',
+      tags: ['Currencies'],
       body: createCurrencySchema,
       response: {
-        201: currencySchema
+        201: currencySchema,
+        400: apiErrorResponseSchema,
+        401: apiErrorResponseSchema,
+        404: apiErrorResponseSchema,
+        500: internalServerErrorResponseSchema
       }
     },
     handler: currencyController.createCurrency
@@ -60,10 +87,16 @@ export function currencyRouter(
     method: 'PUT',
     url: '/:id',
     schema: {
+      description: 'Update currency',
+      tags: ['Currencies'],
       params: updateCurrencyParamsSchema,
       body: updateCurrencyBodySchema,
       response: {
-        200: currencySchema
+        200: currencySchema,
+        400: apiErrorResponseSchema,
+        401: apiErrorResponseSchema,
+        404: apiErrorResponseSchema,
+        500: internalServerErrorResponseSchema
       }
     },
     handler: currencyController.updateCurrency
@@ -73,8 +106,12 @@ export function currencyRouter(
     method: 'DELETE',
     url: '/:id',
     schema: {
+      description: 'Delete currency',
+      tags: ['Currencies'],
       params: deleteCurrencySchema
     },
     handler: currencyController.removeCurrency
   })
+
+  done()
 }

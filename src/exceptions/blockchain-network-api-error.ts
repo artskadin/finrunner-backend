@@ -1,5 +1,5 @@
+import { BlockchainNetworkApiErrorType } from '../schemas/api-error-schema'
 import { ApiError } from './api-error'
-import { BlockchainNetworkApiErrorType } from './error-types'
 
 export class BlockchainNetworkApiError extends ApiError {
   public type: BlockchainNetworkApiErrorType
@@ -23,7 +23,7 @@ export class BlockchainNetworkApiError extends ApiError {
   }
 
   public static NetworkAlreadyExists(prop: string) {
-    return new BlockchainNetworkApiError(
+    return new ApiError(
       400,
       'ALREADY_EXISTS',
       `Blockchain network with property '${prop}' already exists`

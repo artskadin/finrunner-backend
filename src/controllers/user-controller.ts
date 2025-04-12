@@ -24,6 +24,26 @@ class UserController {
     }
   }
 
+  async getMe(req: FastifyRequest, reply: FastifyReply) {
+    try {
+      const userId = req.user?.id
+
+      if (!userId) {
+        throw ApiError.Unauthorized()
+      }
+
+      const user = await userService.getUserById(userId)
+
+      if (!user) {
+        throw ApiError.UserNotFound(userId)
+      }
+
+      reply.status(200).send(user)
+    } catch (err) {
+      throw err
+    }
+  }
+
   async getUserByTelegramId(
     req: FastifyRequest<{
       Params: GetUserByTgIdInput

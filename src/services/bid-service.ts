@@ -4,6 +4,7 @@ import { GetBidsQueryParamsInput } from '../schemas/bid-schema'
 import { kafkaServie } from './kafka/kafka-service'
 import { KafkaTopics } from './kafka/kafka-topics'
 import { BaseService } from './base-service'
+import Decimal from 'decimal.js'
 
 /**
  * Сервис для работы с заявками
@@ -14,6 +15,20 @@ class BidService extends BaseService {
       const createdBid = await bidRepository.createBid({
         fromUser: { connect: { id: bid.fromUserId } }
       })
+
+      if (createdBid) {
+        kafkaServie.send(KafkaTopics.CryptoPaymentEvents, {
+          type: 'CREATE_PAYMENT_EVENT',
+          payload: {
+            type: 'CRYPTO',
+            target: 'ACCEPT',
+            amount: new Decimal(1),
+            deadline: new Date(),
+            bidId: createdBid.id,
+            currencyId: ''
+          }
+        })
+      }
 
       if (createdBid) {
         kafkaServie.send(KafkaTopics.CryptoWalletEvents, {

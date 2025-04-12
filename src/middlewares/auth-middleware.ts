@@ -6,10 +6,6 @@ import { getTokenService } from '../services/token-services'
 export class AuthMiddleware {
   public static async authenticate(req: FastifyRequest, reply: FastifyReply) {
     try {
-      if (req.url.startsWith('/ping') || req.url.startsWith('/api/v1/auth')) {
-        return
-      }
-
       const accessToken = req.headers.authorization?.split(' ')[1]
 
       if (!accessToken) {

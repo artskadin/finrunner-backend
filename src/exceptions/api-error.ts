@@ -1,4 +1,4 @@
-import { ApiErrorType } from './error-types'
+import { ApiErrorType } from '../schemas/api-error-schema'
 
 export class ApiError extends Error {
   public status: number

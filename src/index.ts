@@ -1,10 +1,15 @@
-import Fastify from 'fastify'
+import Fastify, { FastifyReply, FastifyRequest } from 'fastify'
 import fastifyEnv from '@fastify/env'
 import cookie from '@fastify/cookie'
 import {
   serializerCompiler,
-  validatorCompiler
+  validatorCompiler,
+  jsonSchemaTransform,
+  createJsonSchemaTransformObject
 } from 'fastify-type-provider-zod'
+import fastifySwagger from '@fastify/swagger'
+import fastifySwaggerUI from '@fastify/swagger-ui'
+import fastifyCors from '@fastify/cors'
 
 import { userRouter as v1UserRouter } from './router/v1/user-router'
 import { authRouter as v1AuthRouter } from './router/v1/auth-router'
@@ -29,6 +34,9 @@ import { BlockchainManager } from './blockchain-manager'
 import { Blockchain } from './blockchain-manager/blockchain-manager'
 import { CreateWalletEventHandler } from './services/kafka/events-handlers/create-wallet-event-handler'
 import { env } from './envSettings/env'
+import { schemas } from './schemas'
+import { version } from '../package.json'
+import { URL } from 'url'
 
 const options = {
   schema,
@@ -43,9 +51,35 @@ app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
 
 app.register(cookie)
-app.register(fastifyEnv, options)
+app.register(fastifyEnv, options) // remove
 await app.after()
 const envs = app.getEnvs<Envs>()
+
+app.register(fastifyCors, {
+  origin: (origin, cb) => {
+    if (!origin) {
+      return cb(null, true)
+    }
+
+    const hostname = new URL(origin).hostname
+
+    if (hostname === 'localhost') {
+      return cb(null, true)
+    }
+
+    const allowedOrigins: string[] = []
+
+    if (allowedOrigins.includes(origin)) {
+      return cb(null, true)
+    }
+
+    console.warn(`CORS: Origin ${origin} not allowed`)
+    cb(new Error('Not allowed by CORS'), false)
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
+})
 
 app.setErrorHandler((error, req, reply) => {
   if (error.validation && error.validationContext) {
@@ -57,20 +91,16 @@ app.setErrorHandler((error, req, reply) => {
 
   if (error instanceof ApiError) {
     reply.status(error.status).send({
-      error: {
-        type: error.type,
-        message: error.message,
-        details: error.details
-      }
+      type: error.type,
+      message: error.message,
+      details: error.details
     })
   } else {
     app.log.error('Unhandled error:', error)
     console.error(error)
     reply.status(500).send({
-      error: {
-        type: 'INTERNAL_SERVER_ERROR',
-        message: 'An unexpected error occurred'
-      }
+      type: 'INTERNAL_SERVER_ERROR',
+      message: 'An unexpected error occurred'
     })
   }
 })
@@ -95,8 +125,49 @@ app.addHook('onReady', async () => {
   }
 })
 
-app.addHook('preHandler', AuthMiddleware.authenticate)
+//SWAGGER settings
+app.register(fastifySwagger, {
+  openapi: {
+    info: {
+      title: 'FinRunner API',
+      description: 'API documentation for FinRunner monolith',
+      version
+    },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
+        }
+      }
+    },
+    security: [{ bearerAuth: [] }]
+  },
+  transform: jsonSchemaTransform,
+  transformObject: createJsonSchemaTransformObject({
+    schemas
+  })
+})
 
+app.register(fastifySwaggerUI, {
+  routePrefix: '/api/documentation',
+  uiConfig: {
+    docExpansion: 'list',
+    deepLinking: true
+  },
+  staticCSP: true
+})
+
+app.register(
+  async function swaggerProtectionPlugin(app) {
+    app.addHook('preHandler', AuthMiddleware.authenticate)
+    app.addHook('preHandler', AuthMiddleware.authorizeRoles(['ADMIN']))
+  },
+  {
+    prefix: '/api/documentation'
+  }
+)
 app.register(prismaPlugin)
 app.register(v1AuthRouter, { prefix: '/api/v1/auth' })
 app.register(v1UserRouter, { prefix: '/api/v1/users' })
@@ -123,6 +194,9 @@ app.get('/ping', async (req, reply) => {
 
   reply.status(200).send({ message: 'pong' })
 })
+
+await app.ready()
+// app.swagger()
 
 const start = async () => {
   try {
