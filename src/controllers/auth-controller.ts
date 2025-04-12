@@ -26,10 +26,16 @@ class AuthController {
     try {
       const { telegramUsername, otpCode } = req.body
 
-      const { user, accessToken, refreshToken } = await authService.authorize({
+      const userData = await authService.authorize({
         telegramUsername,
         otpCode
       })
+
+      if (!userData) {
+        return
+      }
+
+      const { user, accessToken, refreshToken } = userData
 
       const response: AuthorizeResponse = {
         message: 'Authorized successfully',
@@ -59,8 +65,13 @@ class AuthController {
         throw ApiError.Unauthorized()
       }
 
-      const { userId, accessToken, refreshToken } =
-        await authService.refresh(token)
+      const tokenData = await authService.refresh(token)
+
+      if (!tokenData) {
+        return
+      }
+
+      const { userId, accessToken, refreshToken } = tokenData
 
       const response: AuthorizeResponse = {
         message: 'Token refreshed successfully',

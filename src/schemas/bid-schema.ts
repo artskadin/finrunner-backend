@@ -1,4 +1,4 @@
-import { BidStatus } from '@prisma/client'
+import { BidStatus, PaymentTarget, PaymentType } from '@prisma/client'
 import { z } from 'zod'
 import { paginationSchema } from './general-schemas'
 
@@ -8,6 +8,14 @@ export const bidSchema = z.object({
   status: z.nativeEnum(BidStatus),
   createdAt: z.date(),
   updatedAt: z.date().nullable()
+})
+
+const currencyInfoSchema = z.object({})
+
+const paymentInfoSchema = z.object({
+  type: z.nativeEnum(PaymentType),
+  target: z.nativeEnum(PaymentTarget),
+  currencyInfo: z.string()
 })
 
 export const createBidSchema = bidSchema.pick({ fromUserId: true })

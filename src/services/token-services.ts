@@ -29,7 +29,7 @@ class TokenService {
       const prepared = { ...payload, telegramId: payload.telegramId.toString() }
 
       const accessToken = jwt.sign(prepared, this.jWTAccessSecret, {
-        expiresIn: '20m'
+        expiresIn: '15m'
       })
       const refreshToken = jwt.sign(prepared, this.JWTRefreshSecret, {
         expiresIn: '7d'

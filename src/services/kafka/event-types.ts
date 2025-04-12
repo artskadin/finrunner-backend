@@ -1,3 +1,5 @@
+import { CreatePaymentInput } from '../../schemas/payment-schema'
+
 export type UpdateUserFromTgBotEvent = {
   type: 'UPDATE_USER_FROM_TG_BOT_EVENT'
   payload: {
@@ -30,6 +32,11 @@ export type SendOtpToUserEvent = {
   }
 }
 
+export type CreatePaymentEvent = {
+  type: 'CREATE_PAYMENT_EVENT'
+  payload: CreatePaymentInput
+}
+
 export type CreateWalletEvent = {
   type: 'CREATE_WALLET_EVENT'
   payload: {
@@ -42,4 +49,5 @@ export type KafkaEvent =
   | UserCreatedFromTgBotEvent
   | UserUpdatedFromTgBotEvent
   | SendOtpToUserEvent
+  | CreatePaymentEvent
   | CreateWalletEvent
