@@ -28,7 +28,11 @@ export function currencyRouter(
   opts: FastifyPluginOptions,
   done: HookHandlerDoneFunction
 ) {
-  app.addHook('preHandler', AuthMiddleware.authorizeRoles(['ADMIN']))
+  app.addHook('preHandler', AuthMiddleware.authenticate)
+  app.addHook(
+    'preHandler',
+    AuthMiddleware.authorizeRoles(['ADMIN', 'OPERATOR'])
+  )
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: 'GET',
@@ -108,7 +112,10 @@ export function currencyRouter(
     schema: {
       description: 'Delete currency',
       tags: ['Currencies'],
-      params: deleteCurrencySchema
+      params: deleteCurrencySchema,
+      response: {
+        200: currencySchema
+      }
     },
     handler: currencyController.removeCurrency
   })

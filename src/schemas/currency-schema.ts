@@ -3,12 +3,19 @@ import { z } from 'zod'
 export const currencySchema = z.object({
   id: z.string(),
   fullname: z.string(),
-  shortname: z.string()
+  shortname: z.string(),
+  createdAt: z.date()
 })
 
-export const createCurrencySchema = currencySchema.omit({ id: true })
+export const createCurrencySchema = currencySchema.omit({
+  id: true,
+  createdAt: true
+})
 export const getCurrencyByIdSchema = currencySchema.pick({ id: true })
-export const updateCurrencyBodySchema = currencySchema.omit({ id: true })
+export const updateCurrencyBodySchema = currencySchema.omit({
+  id: true,
+  createdAt: true
+})
 export const updateCurrencyParamsSchema = currencySchema.pick({ id: true })
 export const deleteCurrencySchema = currencySchema.pick({ id: true })
 

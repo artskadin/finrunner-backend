@@ -24,6 +24,7 @@ export function blockchainNetworkRouter(
   opts: FastifyPluginOptions,
   done: HookHandlerDoneFunction
 ) {
+  app.addHook('preHandler', AuthMiddleware.authenticate)
   app.addHook('preHandler', AuthMiddleware.authorizeRoles(['ADMIN']))
 
   app.withTypeProvider<ZodTypeProvider>().route({

@@ -26,7 +26,14 @@ import {
 } from './bid-schema'
 import {} from './blockchain-network-schema'
 import {} from './crypto-wallet-schema'
-import {} from './currency-schema'
+import {
+  createCurrencySchema,
+  currencySchema,
+  deleteCurrencySchema,
+  getCurrencyByIdSchema,
+  updateCurrencyBodySchema,
+  updateCurrencyParamsSchema
+} from './currency-schema'
 import {} from './exchange-pair-schema'
 import {} from './general-schemas'
 import {} from './payment-schema'
@@ -56,5 +63,13 @@ export const schemas = {
   apiErrorTypeSchema,
   apiErrorResponseSchema,
   validationErrorResponseSchema,
-  internalServerErrorResponseSchema
+  internalServerErrorResponseSchema,
+
+  //currency-schema
+  currencySchema,
+  createCurrencySchema,
+  getCurrencyByIdSchema,
+  updateCurrencyBodySchema,
+  updateCurrencyParamsSchema,
+  deleteCurrencySchema
 }
