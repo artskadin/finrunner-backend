@@ -5,5 +5,6 @@ export function cryptoWalletRouter(
   app: FastifyInstance,
   opts: FastifyPluginOptions
 ) {
+  app.addHook('preHandler', AuthMiddleware.authenticate)
   app.addHook('preHandler', AuthMiddleware.authorizeRoles(['ADMIN']))
 }

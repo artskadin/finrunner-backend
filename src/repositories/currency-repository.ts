@@ -16,7 +16,9 @@ class CurrencyRepository extends BaseRepository {
 
   async getAllCurrencies() {
     try {
-      return await this.prisma.currency.findMany()
+      return await this.prisma.currency.findMany({
+        orderBy: { createdAt: 'desc' }
+      })
     } catch (err) {
       throw new Error(`Failed to get all currencies`)
     }

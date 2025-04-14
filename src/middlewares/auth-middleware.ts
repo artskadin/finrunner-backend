@@ -2,6 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { UserRole } from '@prisma/client'
 import { ApiError } from '../exceptions/api-error'
 import { getTokenService } from '../services/token-services'
+import { userService } from '../services/user-service'
 
 export class AuthMiddleware {
   public static async authenticate(req: FastifyRequest, reply: FastifyReply) {
@@ -33,14 +34,16 @@ export class AuthMiddleware {
   public static authorizeRoles(userRoles: UserRole[]) {
     return async (req: FastifyRequest, reply: FastifyReply) => {
       try {
-        const user = req.user
+        const userFromRequest = req.user
 
-        if (!user) {
+        if (!userFromRequest) {
           throw ApiError.Unauthorized()
         }
 
-        if (!userRoles.includes(user.role)) {
-          throw ApiError.Forbidden(user.id)
+        const freshUser = await userService.getUserById(userFromRequest?.id)
+
+        if (freshUser && !userRoles.includes(freshUser.role)) {
+          throw ApiError.Forbidden(freshUser.id)
         }
       } catch (err) {
         throw err
