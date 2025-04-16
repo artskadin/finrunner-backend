@@ -74,15 +74,13 @@ model Bid {
 }
 
 model Currency {
-  id        String @id @default(uuid()) @db.Uuid
-  fullname  String @unique
-  shortname String @unique
-  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamp()
+  id        String   @id @default(uuid()) @db.Uuid
+  fullname  String   @unique
+  shortname String   @unique
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp()
 
   blockchainNetworks CurrencyBlockchainNetwork[]
   fiatProviders      CurrencyFiatProvider[]
-  exchangePairsFrom  ExchangePair[]              @relation("FromCurrency")
-  exchangePairsTo    ExchangePair[]              @relation("ToCurrency")
   Payment            Payment[]
 
   @@map("Currencies")
@@ -96,20 +94,23 @@ model CurrencyBlockchainNetwork {
   currency          Currency          @relation(fields: [currencyId], references: [id])
   blockChainNetwork BlockchainNetwork @relation(fields: [blockchainNetworkId], references: [id])
 
+  fromExchangePair ExchangePair[] @relation("FromCryptoUnit")
+  toExchangePair   ExchangePair[] @relation("ToCryptoUnit")
+
+  @@unique([currencyId, blockchainNetworkId])
   @@map("Currency_blockchain_networks")
 }
 
 model BlockchainNetwork {
-  id            String @id @default(uuid()) @db.Uuid
+  id            String   @id @default(uuid()) @db.Uuid
   name          String
-  tokenStandart String @unique @map("token_standart")
-
-  fromExchangePair ExchangePair[] @relation("FromBlockchainNetwork")
-  toExchangePair   ExchangePair[] @relation("ToBlockchainNetwork")
+  tokenStandart String   @map("token_standart")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamp()
 
   currencies   CurrencyBlockchainNetwork[]
   cryptoWallet CryptoWallet[]
 
+  @@unique([name, tokenStandart], map: "blockchain_networks_name_token_standart_key")
   @@map("Blockchain_networks")
 }
 
@@ -120,10 +121,7 @@ model FiatProvider {
   createdAt DateTime         @default(now()) @map("created_at") @db.Timestamp()
   updatedAt DateTime?        @map("updated_at") @db.Timestamp()
 
-  fromExchangePair ExchangePair[]         @relation("FromFiatProvider")
-  toExchangePair   ExchangePair[]         @relation("ToFiatProvider")
-
-  currencies       CurrencyFiatProvider[]
+  currencies CurrencyFiatProvider[]
 
   @@map("Fiat_providers")
 }
@@ -142,6 +140,10 @@ model CurrencyFiatProvider {
   fiatProvider FiatProvider @relation(fields: [fiatProviderId], references: [id])
   currency     Currency     @relation(fields: [currencyId], references: [id])
 
+  fromExchangePair ExchangePair[] @relation("FromFiatUnit")
+  toExchangePair   ExchangePair[] @relation("ToFiatUnit")
+
+  @@unique([fiatProviderId, currencyId])
   @@map("Fiat_provider_currencies")
 }
 
@@ -231,22 +233,21 @@ model ExchangePair {
   updatedAt        DateTime? @map("updated_at") @db.Timestamp()
 
   // Связи для криптовалют
-  fromBlockchainNetworkId String? @map("from_blockchain_network_id") @db.Uuid
-  toBlockchainNetworkId   String? @map("to_blockchain_network_id") @db.Uuid
+  fromCryptoUnitId String? @map("from_crypto_unit_id") @db.Uuid
+  toCryptoUnitId   String? @map("to_crypto_unit_id") @db.Uuid
 
   // Связи для фиатных валют
-  fromFiatProviderId String? @map("from_fiat_provider_id") @db.Uuid
-  toFiatProviderId   String? @map("to_fiat_provider_id") @db.Uuid
+  fromFiatUnitId String? @map("from_fiat_unit_id") @db.Uuid
+  toFiatUnitId   String? @map("to_fiat_unit_id") @db.Uuid
 
-  fromCurrency          Currency               @relation("FromCurrency", fields: [fromCurrencyId], references: [id])
-  toCurrency            Currency               @relation("ToCurrency", fields: [toCurrencyId], references: [id])
-  fromBlockchainNetwork BlockchainNetwork?     @relation("FromBlockchainNetwork", fields: [fromBlockchainNetworkId], references: [id])
-  toBlockchainNetwork   BlockchainNetwork?     @relation("ToBlockchainNetwork", fields: [toBlockchainNetworkId], references: [id])
-  fromFiatProvider      FiatProvider?          @relation("FromFiatProvider", fields: [fromFiatProviderId], references: [id])
-  toFiatProvider        FiatProvider?          @relation("ToFiatProvider", fields: [toFiatProviderId], references: [id])
-  ratesHistory          ExchangeRatesHistory[]
+  fromCryptoUnit CurrencyBlockchainNetwork? @relation("FromCryptoUnit", fields: [fromCryptoUnitId], references: [id])
+  toCryptoUnit   CurrencyBlockchainNetwork? @relation("ToCryptoUnit", fields: [toCryptoUnitId], references: [id])
+  fromFiatUnit   CurrencyFiatProvider?      @relation("FromFiatUnit", fields: [fromFiatUnitId], references: [id])
+  toFiatUnit     CurrencyFiatProvider?      @relation("ToFiatUnit", fields: [toFiatUnitId], references: [id])
 
-  @@unique([fromCurrencyId, toCurrencyId, fromBlockchainNetworkId, toBlockchainNetworkId, fromFiatProviderId, toFiatProviderId])
+  ratesHistory ExchangeRatesHistory[]
+
+  @@unique([fromCryptoUnitId, toCryptoUnitId, fromFiatUnitId, toFiatUnitId])
   @@map("Exchange_pairs")
 }
 

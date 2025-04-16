@@ -1,8 +1,0 @@
--- AlterTable
-ALTER TABLE "AML_checks" ALTER COLUMN "created_at" SET DEFAULT CURRENT_TIMESTAMP;
-
--- AlterTable
-ALTER TABLE "Exchange_pairs" ALTER COLUMN "created_at" SET DEFAULT CURRENT_TIMESTAMP;
-
--- AlterTable
-ALTER TABLE "Pockets" ALTER COLUMN "created_at" SET DEFAULT CURRENT_TIMESTAMP;

@@ -4,10 +4,10 @@ import { EthereumAdapter } from './adapters/ethereum-adapter'
 import { BlockchainConfig, BlockchainType } from './types'
 
 export enum Blockchain {
-  BITCOIN = 'BITCOIN',
-  ETHEREUM = 'ETHEREUM',
-  SOLANA = 'SOLANA'
-  // TRON = 'TRON',
+  Bitcoin = 'Bitcoin',
+  Ethereum = 'Ethereum',
+  Solana = 'Solana',
+  Tron = 'Tron'
   // LITECOIN = 'LITECOIN'
 }
 
@@ -18,8 +18,12 @@ export class BlockchainManager {
   constructor(config: BlockchainConfig) {
     this.client = config.chainType
     this.adapters = new Map()
-    this.adapters.set(Blockchain.BITCOIN, new BitcoinAdapter())
-    this.adapters.set(Blockchain.ETHEREUM, new EthereumAdapter(config))
+    this.adapters.set(Blockchain.Bitcoin, new BitcoinAdapter())
+    this.adapters.set(Blockchain.Ethereum, new EthereumAdapter(config))
+  }
+
+  static getAvailableBlockchains() {
+    return Object.values(Blockchain) as Blockchain[]
   }
 
   private getAdapter(blockchain: Blockchain): BlockchainAdapter {

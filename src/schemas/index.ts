@@ -24,7 +24,15 @@ import {
   getBidsResponseSchema,
   updateBidBodySchema
 } from './bid-schema'
-import {} from './blockchain-network-schema'
+import {
+  availableBlockchainNetworksSchema,
+  blockchainNetworkSchema,
+  createBlockchainNetworkSchema,
+  deleteBlockchainNetworkParamsSchema,
+  getblockchainNetworkByIdSchema,
+  updateBlockchainNetworkBodySchema,
+  updateBlockchainNetworkParamsSchema
+} from './blockchain-network-schema'
 import {} from './crypto-wallet-schema'
 import {
   createCurrencySchema,
@@ -71,5 +79,14 @@ export const schemas = {
   getCurrencyByIdSchema,
   updateCurrencyBodySchema,
   updateCurrencyParamsSchema,
-  deleteCurrencySchema
+  deleteCurrencySchema,
+
+  //blockchain-network-schema
+  blockchainNetworkSchema,
+  availableBlockchainNetworksSchema,
+  createBlockchainNetworkSchema,
+  getblockchainNetworkByIdSchema,
+  updateBlockchainNetworkParamsSchema,
+  updateBlockchainNetworkBodySchema,
+  deleteBlockchainNetworkParamsSchema
 }

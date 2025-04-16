@@ -41,7 +41,7 @@ export function currencyRouter(
       description: 'Get all available currencies',
       tags: ['Currencies'],
       response: {
-        200: currencySchema.array(),
+        200: currencySchema.array().nullable(),
         400: apiErrorResponseSchema,
         401: apiErrorResponseSchema,
         404: apiErrorResponseSchema,
@@ -59,7 +59,7 @@ export function currencyRouter(
       tags: ['Currencies'],
       params: getCurrencyByIdSchema,
       response: {
-        200: currencySchema,
+        200: currencySchema.nullable(),
         400: apiErrorResponseSchema,
         401: apiErrorResponseSchema,
         404: apiErrorResponseSchema,
@@ -103,7 +103,8 @@ export function currencyRouter(
         500: internalServerErrorResponseSchema
       }
     },
-    handler: currencyController.updateCurrency
+    handler: currencyController.updateCurrency,
+    preHandler: AuthMiddleware.authorizeRoles(['ADMIN'])
   })
 
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -117,7 +118,8 @@ export function currencyRouter(
         200: currencySchema
       }
     },
-    handler: currencyController.removeCurrency
+    handler: currencyController.removeCurrency,
+    preHandler: AuthMiddleware.authorizeRoles(['ADMIN'])
   })
 
   done()
