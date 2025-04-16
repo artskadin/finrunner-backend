@@ -27,6 +27,24 @@ class BlockchainNetworkController {
     }
   }
 
+  /**
+   * Список блокчейнов, с которыми умеет работать BlockchainManager
+   * и, соответственно, бэкенд
+   */
+  async getAvailableBlockchaiNetworks(
+    req: FastifyRequest,
+    reply: FastifyReply
+  ) {
+    try {
+      const availableBlockchains =
+        await blockchainNetworkService.getAvailableBlockchainNetworks()
+
+      reply.status(200).send(availableBlockchains)
+    } catch (err) {
+      throw err
+    }
+  }
+
   async getNetworks(req: FastifyRequest, reply: FastifyReply) {
     try {
       const networks = await blockchainNetworkService.getAllNetworks()

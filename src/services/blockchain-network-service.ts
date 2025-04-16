@@ -1,18 +1,28 @@
 import { Prisma } from '@prisma/client'
 import { blockchainNetworkRepository } from '../repositories/blockchain-network-repository'
 import { BlockchainNetworkApiError } from '../exceptions/blockchain-network-api-error'
-import { Blockchain } from '../blockchain-manager'
+import { Blockchain, BlockchainManager } from '../blockchain-manager'
 import { BaseService } from './base-service'
 
 /**
  * Сервис для работы с блокчейнами
  */
 class BlockchainNetworkService extends BaseService {
+  async getAvailableBlockchainNetworks() {
+    try {
+      return BlockchainManager.getAvailableBlockchains()
+    } catch (err) {
+      this.handleError(err)
+    }
+  }
+
   async createNetwork(network: Prisma.BlockchainNetworkCreateInput) {
     try {
-      const networkName = network.name as keyof typeof Blockchain
+      const availableBlockchains = BlockchainManager.getAvailableBlockchains()
 
-      if (networkName in Blockchain) {
+      const networkName = network.name as Blockchain
+
+      if (availableBlockchains.includes(networkName)) {
         return await blockchainNetworkRepository.createNetwork(network)
       }
 
