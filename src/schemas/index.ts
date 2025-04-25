@@ -45,6 +45,14 @@ import {
 import {} from './exchange-pair-schema'
 import {} from './general-schemas'
 import {} from './payment-schema'
+import {
+  createCryptoAssetSchema,
+  cryptoAssetSchema,
+  deleteCryptoAssetParamsSchema,
+  getCryptoAssetByIdSchema,
+  updateCryptoAssetBodySchema,
+  updateCryptoAssetParamsSchema
+} from './crypto-asset-schema'
 
 export const schemas = {
   //user-schema
@@ -88,5 +96,13 @@ export const schemas = {
   getblockchainNetworkByIdSchema,
   updateBlockchainNetworkParamsSchema,
   updateBlockchainNetworkBodySchema,
-  deleteBlockchainNetworkParamsSchema
+  deleteBlockchainNetworkParamsSchema,
+
+  //crypto-asset-schemas
+  cryptoAssetSchema,
+  createCryptoAssetSchema,
+  getCryptoAssetByIdSchema,
+  updateCryptoAssetParamsSchema,
+  updateCryptoAssetBodySchema,
+  deleteCryptoAssetParamsSchema
 }

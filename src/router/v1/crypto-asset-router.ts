@@ -1,25 +1,25 @@
 import {
-  FastifyPluginOptions,
   FastifyInstance,
+  FastifyPluginOptions,
   HookHandlerDoneFunction
 } from 'fastify'
-import { ZodTypeProvider } from 'fastify-type-provider-zod'
-import {
-  createCurrencySchema,
-  currencySchema,
-  deleteCurrencySchema,
-  getCurrencyByIdSchema,
-  updateCurrencyBodySchema,
-  updateCurrencyParamsSchema
-} from '../../schemas/currency-schema'
-import { currencyController } from '../../controllers/currency-controller'
 import { AuthMiddleware } from '../../middlewares/auth-middleware'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { cryptoAssetController } from '../../controllers/crypto-asset-controller'
+import {
+  createCryptoAssetSchema,
+  cryptoAssetSchema,
+  deleteCryptoAssetParamsSchema,
+  getCryptoAssetByIdSchema,
+  updateCryptoAssetBodySchema,
+  updateCryptoAssetParamsSchema
+} from '../../schemas/crypto-asset-schema'
 import {
   apiErrorResponseSchema,
   internalServerErrorResponseSchema
 } from '../../schemas/api-error-schema'
 
-export function currencyRouter(
+export function cryptoAssetRouter(
   app: FastifyInstance,
   opts: FastifyPluginOptions,
   done: HookHandlerDoneFunction
@@ -34,72 +34,72 @@ export function currencyRouter(
     method: 'GET',
     url: '/',
     schema: {
-      description: 'Get all available currencies',
-      tags: ['Currencies'],
+      description: 'Get all available crypto assets',
+      tags: ['crypto assets'],
       response: {
-        200: currencySchema.array().nullable(),
+        200: cryptoAssetSchema.array().nullable(),
         400: apiErrorResponseSchema,
         401: apiErrorResponseSchema,
         404: apiErrorResponseSchema,
         500: internalServerErrorResponseSchema
       }
     },
-    handler: currencyController.getCurrencies
+    handler: cryptoAssetController.getCryptoAssets
   })
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: 'GET',
     url: '/:id',
     schema: {
-      description: 'Get currency by id',
-      tags: ['Currencies'],
-      params: getCurrencyByIdSchema,
+      description: 'Get crypto asset by id',
+      tags: ['crypto assets'],
+      params: getCryptoAssetByIdSchema,
       response: {
-        200: currencySchema.nullable(),
+        200: cryptoAssetSchema.nullable(),
         400: apiErrorResponseSchema,
         401: apiErrorResponseSchema,
         404: apiErrorResponseSchema,
         500: internalServerErrorResponseSchema
       }
     },
-    handler: currencyController.getCurrencyById
+    handler: cryptoAssetController.getCryptoAssetById
   })
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: 'POST',
     url: '/',
     schema: {
-      description: 'Create currency',
-      tags: ['Currencies'],
-      body: createCurrencySchema,
+      description: 'Create crypto asset',
+      tags: ['crypto assets'],
+      body: createCryptoAssetSchema,
       response: {
-        201: currencySchema,
+        201: cryptoAssetSchema,
         400: apiErrorResponseSchema,
         401: apiErrorResponseSchema,
         404: apiErrorResponseSchema,
         500: internalServerErrorResponseSchema
       }
     },
-    handler: currencyController.createCurrency
+    handler: cryptoAssetController.createCryptoAsset
   })
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: 'PATCH',
     url: '/:id',
     schema: {
-      description: 'Patch currency',
-      tags: ['Currencies'],
-      params: updateCurrencyParamsSchema,
-      body: updateCurrencyBodySchema,
+      description: 'Patch crypto asset',
+      tags: ['crypto assets'],
+      params: updateCryptoAssetParamsSchema,
+      body: updateCryptoAssetBodySchema,
       response: {
-        200: currencySchema,
+        200: cryptoAssetSchema.nullable(),
         400: apiErrorResponseSchema,
         401: apiErrorResponseSchema,
         404: apiErrorResponseSchema,
         500: internalServerErrorResponseSchema
       }
     },
-    handler: currencyController.updateCurrency,
+    handler: cryptoAssetController.updateCryptoAsset,
     preHandler: AuthMiddleware.authorizeRoles(['ADMIN'])
   })
 
@@ -107,14 +107,18 @@ export function currencyRouter(
     method: 'DELETE',
     url: '/:id',
     schema: {
-      description: 'Delete currency',
-      tags: ['Currencies'],
-      params: deleteCurrencySchema,
+      description: 'Delete crypto asset',
+      tags: ['crypto assets'],
+      params: deleteCryptoAssetParamsSchema,
       response: {
-        200: currencySchema
+        200: cryptoAssetSchema.nullable(),
+        400: apiErrorResponseSchema,
+        401: apiErrorResponseSchema,
+        404: apiErrorResponseSchema,
+        500: internalServerErrorResponseSchema
       }
     },
-    handler: currencyController.removeCurrency,
+    handler: cryptoAssetController.deleteCryptoAsset,
     preHandler: AuthMiddleware.authorizeRoles(['ADMIN'])
   })
 

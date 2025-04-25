@@ -19,10 +19,12 @@ export const createBlockchainNetworkSchema = blockchainNetworkSchema.omit({
 export const getblockchainNetworkByIdSchema = blockchainNetworkSchema.pick({
   id: true
 })
-export const updateBlockchainNetworkBodySchema = blockchainNetworkSchema.omit({
-  id: true,
-  createdAt: true
-})
+export const updateBlockchainNetworkBodySchema = blockchainNetworkSchema
+  .omit({
+    id: true,
+    createdAt: true
+  })
+  .partial()
 export const updateBlockchainNetworkParamsSchema = blockchainNetworkSchema.pick(
   {
     id: true

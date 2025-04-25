@@ -36,7 +36,7 @@ import { CreateWalletEventHandler } from './services/kafka/events-handlers/creat
 import { env } from './envSettings/env'
 import { schemas } from './schemas'
 import { version } from '../package.json'
-import { URL } from 'url'
+import { cryptoAssetRouter } from './router/v1/crypto-asset-router'
 
 const options = {
   schema,
@@ -175,6 +175,7 @@ app.register(v1BlockchainNetworkRouter, {
   prefix: '/api/v1/blockchain-networks'
 })
 app.register(v1CurrencyRouter, { prefix: '/api/v1/currencies' })
+app.register(cryptoAssetRouter, { prefix: '/api/v1/crypto-assets' })
 app.register(v1ExchangePairRouter, { prefix: '/api/v1/exchange-pairs' })
 app.register(v1BidRouter, { prefix: '/api/v1/bids' })
 // app.register(v1CryptoWalletRouter, { prefix: '/api/v1/crypto-wallets' })
