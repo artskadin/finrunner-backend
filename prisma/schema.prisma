@@ -79,26 +79,28 @@ model Currency {
   shortname String   @unique
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp()
 
-  blockchainNetworks CurrencyBlockchainNetwork[]
-  fiatProviders      CurrencyFiatProvider[]
-  Payment            Payment[]
+  cryptoAssets CryptoAsset[]
+  fiatAssets   FiatAsset[]
+  Payment      Payment[]
 
   @@map("Currencies")
 }
 
-model CurrencyBlockchainNetwork {
-  id                  String @id @default(uuid()) @db.Uuid
-  currencyId          String @map("currency_id") @db.Uuid
-  blockchainNetworkId String @map("blockchain_network_id") @db.Uuid
+// CurrencyBlockchainNetwork
+model CryptoAsset {
+  id                  String   @id @default(uuid()) @db.Uuid
+  currencyId          String   @map("currency_id") @db.Uuid
+  blockchainNetworkId String   @map("blockchain_network_id") @db.Uuid
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamp()
 
   currency          Currency          @relation(fields: [currencyId], references: [id])
-  blockChainNetwork BlockchainNetwork @relation(fields: [blockchainNetworkId], references: [id])
+  blockchainNetwork BlockchainNetwork @relation(fields: [blockchainNetworkId], references: [id])
 
-  fromExchangePair ExchangePair[] @relation("FromCryptoUnit")
-  toExchangePair   ExchangePair[] @relation("ToCryptoUnit")
+  fromExchangePair ExchangePair[] @relation("FromCryptoAsset")
+  toExchangePair   ExchangePair[] @relation("ToCryptoAsset")
 
   @@unique([currencyId, blockchainNetworkId])
-  @@map("Currency_blockchain_networks")
+  @@map("Crypto_assets")
 }
 
 model BlockchainNetwork {
@@ -107,7 +109,7 @@ model BlockchainNetwork {
   tokenStandart String   @map("token_standart")
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamp()
 
-  currencies   CurrencyBlockchainNetwork[]
+  currencies   CryptoAsset[]
   cryptoWallet CryptoWallet[]
 
   @@unique([name, tokenStandart], map: "blockchain_networks_name_token_standart_key")
@@ -121,8 +123,9 @@ model FiatProvider {
   createdAt DateTime         @default(now()) @map("created_at") @db.Timestamp()
   updatedAt DateTime?        @map("updated_at") @db.Timestamp()
 
-  currencies CurrencyFiatProvider[]
+  currencies FiatAsset[]
 
+  @@unique([name, type], map: "fiat_provider_name_type_key")
   @@map("Fiat_providers")
 }
 
@@ -132,19 +135,21 @@ enum FiatProviderType {
   PHONE_NUMBER
 }
 
-model CurrencyFiatProvider {
-  id             String @id @default(uuid()) @db.Uuid
-  fiatProviderId String @map("fiat_provider_id") @db.Uuid
-  currencyId     String @map("currency_id") @db.Uuid
+//CurrencyFiatProvider
+model FiatAsset {
+  id             String   @id @default(uuid()) @db.Uuid
+  fiatProviderId String   @map("fiat_provider_id") @db.Uuid
+  currencyId     String   @map("currency_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamp()
 
   fiatProvider FiatProvider @relation(fields: [fiatProviderId], references: [id])
   currency     Currency     @relation(fields: [currencyId], references: [id])
 
-  fromExchangePair ExchangePair[] @relation("FromFiatUnit")
-  toExchangePair   ExchangePair[] @relation("ToFiatUnit")
+  fromExchangePair ExchangePair[] @relation("FromFiatAsset")
+  toExchangePair   ExchangePair[] @relation("ToFiatAsset")
 
   @@unique([fiatProviderId, currencyId])
-  @@map("Fiat_provider_currencies")
+  @@map("Fiat_assets")
 }
 
 enum PaymentType {
@@ -225,29 +230,27 @@ model CryptoWallet {
 
 model ExchangePair {
   id               String    @id @default(uuid()) @db.Uuid
-  fromCurrencyId   String    @map("from_currency_id") @db.Uuid
-  toCurrencyId     String    @map("to_currency_id") @db.Uuid
   markupPercentage Decimal   @map("markup_percentage") @db.Decimal()
   isActive         Boolean   @default(false) @map("is_active") @db.Boolean
   createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamp()
   updatedAt        DateTime? @map("updated_at") @db.Timestamp()
 
   // Связи для криптовалют
-  fromCryptoUnitId String? @map("from_crypto_unit_id") @db.Uuid
-  toCryptoUnitId   String? @map("to_crypto_unit_id") @db.Uuid
+  fromCryptoAssetId String? @map("from_crypto_asset_id") @db.Uuid
+  toCryptoAssetId   String? @map("to_crypto_asset_id") @db.Uuid
 
   // Связи для фиатных валют
-  fromFiatUnitId String? @map("from_fiat_unit_id") @db.Uuid
-  toFiatUnitId   String? @map("to_fiat_unit_id") @db.Uuid
+  fromFiatAssetId String? @map("from_fiat_asset_id") @db.Uuid
+  toFiatAssetId   String? @map("to_fiat_asset_id") @db.Uuid
 
-  fromCryptoUnit CurrencyBlockchainNetwork? @relation("FromCryptoUnit", fields: [fromCryptoUnitId], references: [id])
-  toCryptoUnit   CurrencyBlockchainNetwork? @relation("ToCryptoUnit", fields: [toCryptoUnitId], references: [id])
-  fromFiatUnit   CurrencyFiatProvider?      @relation("FromFiatUnit", fields: [fromFiatUnitId], references: [id])
-  toFiatUnit     CurrencyFiatProvider?      @relation("ToFiatUnit", fields: [toFiatUnitId], references: [id])
+  fromCryptoAsset CryptoAsset? @relation("FromCryptoAsset", fields: [fromCryptoAssetId], references: [id])
+  toCryptoAsset   CryptoAsset? @relation("ToCryptoAsset", fields: [toCryptoAssetId], references: [id])
+  fromFiatAsset   FiatAsset?   @relation("FromFiatAsset", fields: [fromFiatAssetId], references: [id])
+  toFiatAsset     FiatAsset?   @relation("ToFiatAsset", fields: [toFiatAssetId], references: [id])
 
   ratesHistory ExchangeRatesHistory[]
 
-  @@unique([fromCryptoUnitId, toCryptoUnitId, fromFiatUnitId, toFiatUnitId])
+  @@unique([fromCryptoAssetId, toCryptoAssetId, fromFiatAssetId, toFiatAssetId])
   @@map("Exchange_pairs")
 }
 

@@ -19,6 +19,7 @@ import {
   apiErrorResponseSchema,
   internalServerErrorResponseSchema
 } from '../../schemas/api-error-schema'
+import { z } from 'zod'
 
 export function blockchainNetworkRouter(
   app: FastifyInstance,
@@ -103,15 +104,15 @@ export function blockchainNetworkRouter(
   })
 
   app.withTypeProvider<ZodTypeProvider>().route({
-    method: 'PUT',
+    method: 'PATCH',
     url: '/:id',
     schema: {
-      description: 'Update blockchain networks',
+      description: 'Patch blockchain networks',
       tags: ['Blockchain networks'],
       params: updateBlockchainNetworkParamsSchema,
       body: updateBlockchainNetworkBodySchema,
       response: {
-        200: blockchainNetworkSchema,
+        200: z.string(),
         400: apiErrorResponseSchema,
         401: apiErrorResponseSchema,
         404: apiErrorResponseSchema,
