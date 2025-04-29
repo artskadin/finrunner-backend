@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client'
 import { exchangePairsRepository } from '../repositories/exchange-pair-repository'
 import { BaseService } from './base-service'
+import { ExchangePairApiError } from '../exceptions/exchange-pair-api-error'
 
 /**
  * Сервис для работы с обменными парами
@@ -8,13 +9,30 @@ import { BaseService } from './base-service'
 class ExchangePairService extends BaseService {
   async createPair(pair: Prisma.ExchangePairUncheckedCreateInput) {
     try {
-      const { fromCurrencyId, toCurrencyId, markupPercentage } = pair
+      const {
+        fromFiatAssetId,
+        fromCryptoAssetId,
+        toFiatAssetId,
+        toCryptoAssetId,
+        markupPercentage,
+        status
+      } = pair
 
-      return await exchangePairsRepository.createPair({
-        fromCurrency: { connect: { id: fromCurrencyId } },
-        toCurrency: { connect: { id: toCurrencyId } },
-        markupPercentage
-      })
+      if (
+        (!fromFiatAssetId && !fromCryptoAssetId) ||
+        (fromFiatAssetId && fromCryptoAssetId)
+      ) {
+        throw ExchangePairApiError.OnlyFromCryptoOrFromFiat()
+      }
+
+      if (
+        (!toFiatAssetId && !toCryptoAssetId) ||
+        (toFiatAssetId && toCryptoAssetId)
+      ) {
+        throw ExchangePairApiError.OnlyToCryptoOrToFiat()
+      }
+
+      return await exchangePairsRepository.createPair(pair)
     } catch (err) {
       this.handleError(err)
     }

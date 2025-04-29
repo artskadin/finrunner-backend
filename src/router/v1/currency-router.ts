@@ -80,7 +80,8 @@ export function currencyRouter(
         500: internalServerErrorResponseSchema
       }
     },
-    handler: currencyController.createCurrency
+    handler: currencyController.createCurrency,
+    preHandler: AuthMiddleware.authorizeRoles(['ADMIN'])
   })
 
   app.withTypeProvider<ZodTypeProvider>().route({

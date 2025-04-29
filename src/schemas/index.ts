@@ -42,7 +42,15 @@ import {
   updateCurrencyBodySchema,
   updateCurrencyParamsSchema
 } from './currency-schema'
-import {} from './exchange-pair-schema'
+import {
+  createExchangePairSchema,
+  deleteExchangePairSchema,
+  exchangePairSchema,
+  exchangePairSchemaResponse,
+  getExchangePairByIdSchema,
+  updateExchangePairBodySchema,
+  updateExchangePairParamsSchema
+} from './exchange-pair-schema'
 import {} from './general-schemas'
 import {} from './payment-schema'
 import {
@@ -104,5 +112,14 @@ export const schemas = {
   getCryptoAssetByIdSchema,
   updateCryptoAssetParamsSchema,
   updateCryptoAssetBodySchema,
-  deleteCryptoAssetParamsSchema
+  deleteCryptoAssetParamsSchema,
+
+  //exchange-paris-schemas
+  exchangePairSchema,
+  exchangePairSchemaResponse,
+  createExchangePairSchema,
+  getExchangePairByIdSchema,
+  updateExchangePairParamsSchema,
+  updateExchangePairBodySchema,
+  deleteExchangePairSchema
 }

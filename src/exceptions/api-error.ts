@@ -57,7 +57,7 @@ export class ApiError extends Error {
     return new ApiError(
       400,
       'FOREIGN_KEY_CONSTRAINT_VIOLATED',
-      `Foreign key constraint violated`
+      `The entity '${modelName}' is used!`
     )
   }
 
