@@ -22,12 +22,24 @@ const blockchainNetworkApiErrorTypeSchema = z.union([
   z.literal('INVALID_BLOCKCHAIN_NETWORK_NAME')
 ])
 
+const exchangePairApiErrorTypeSchema = z.union([
+  z.literal('SHOULD_ONLY_BE_FROM_FIAT_OR_FROM_CRYPTO'),
+  z.literal('SHOULD_ONLY_BE_TO_FIAT_OR_TO_CRYPTO')
+])
+
 export const apiErrorTypeSchema = z
-  .union([commonApiErrorTypeSchema, blockchainNetworkApiErrorTypeSchema])
+  .union([
+    commonApiErrorTypeSchema,
+    blockchainNetworkApiErrorTypeSchema,
+    exchangePairApiErrorTypeSchema
+  ])
   .describe('Error type code')
 
 export type BlockchainNetworkApiErrorType = z.infer<
   typeof blockchainNetworkApiErrorTypeSchema
+>
+export type ExchangePairApiErrorType = z.infer<
+  typeof exchangePairApiErrorTypeSchema
 >
 export type CommonApiErrorType = z.infer<typeof commonApiErrorTypeSchema>
 export type ApiErrorType = z.infer<typeof apiErrorTypeSchema>

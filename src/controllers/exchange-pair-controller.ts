@@ -8,25 +8,50 @@ import {
   UpdateExchangePairParamsInput
 } from '../schemas/exchange-pair-schema'
 import { exchangePairsService } from '../services/exchange-pair-service'
+import { ExchangePairApiError } from '../exceptions/exchange-pair-api-error'
 
 class ExchangePairController {
   private preparePairToResponse(pair: ExchangePair) {
     return {
       ...pair,
-      markupPercentage: pair?.markupPercentage.toString()
+      markupPercentage: pair.markupPercentage.toString()
     }
   }
 
-  async createPair(
+  createPair = async (
     req: FastifyRequest<{ Body: CreateExchangePairInput }>,
     reply: FastifyReply
-  ) {
+  ) => {
     try {
-      const { fromCurrencyId, toCurrencyId, markupPercentage } = req.body
+      const {
+        fromFiatAssetId,
+        fromCryptoAssetId,
+        toFiatAssetId,
+        toCryptoAssetId,
+        status,
+        markupPercentage
+      } = req.body
+
+      if (
+        (!fromFiatAssetId && !fromCryptoAssetId) ||
+        (fromFiatAssetId && fromCryptoAssetId)
+      ) {
+        throw ExchangePairApiError.OnlyFromCryptoOrFromFiat()
+      }
+
+      if (
+        (!toFiatAssetId && !toCryptoAssetId) ||
+        (toFiatAssetId && toCryptoAssetId)
+      ) {
+        throw ExchangePairApiError.OnlyToCryptoOrToFiat()
+      }
 
       const createdPair = await exchangePairsService.createPair({
-        fromCurrencyId,
-        toCurrencyId,
+        fromFiatAssetId,
+        fromCryptoAssetId,
+        toFiatAssetId,
+        toCryptoAssetId,
+        status,
         markupPercentage
       })
 
@@ -84,13 +109,10 @@ class ExchangePairController {
   ) {
     try {
       const { id } = req.params
-      const { fromCurrencyId, toCurrencyId, isActive, markupPercentage } =
-        req.body
+      const { status, markupPercentage } = req.body
 
       const updatedPair = await exchangePairsService.updatePair(id, {
-        fromCurrencyId,
-        toCurrencyId,
-        isActive,
+        status,
         markupPercentage
       })
 
@@ -104,10 +126,10 @@ class ExchangePairController {
     }
   }
 
-  async removePair(
+  removePair = async (
     req: FastifyRequest<{ Params: DeleteExchangePairInput }>,
     reply: FastifyReply
-  ) {
+  ) => {
     try {
       const { id } = req.params
 

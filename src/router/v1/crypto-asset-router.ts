@@ -80,7 +80,8 @@ export function cryptoAssetRouter(
         500: internalServerErrorResponseSchema
       }
     },
-    handler: cryptoAssetController.createCryptoAsset
+    handler: cryptoAssetController.createCryptoAsset,
+    preHandler: AuthMiddleware.authorizeRoles(['ADMIN'])
   })
 
   app.withTypeProvider<ZodTypeProvider>().route({

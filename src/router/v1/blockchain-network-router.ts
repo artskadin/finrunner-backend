@@ -19,7 +19,6 @@ import {
   apiErrorResponseSchema,
   internalServerErrorResponseSchema
 } from '../../schemas/api-error-schema'
-import { z } from 'zod'
 
 export function blockchainNetworkRouter(
   app: FastifyInstance,
@@ -100,7 +99,8 @@ export function blockchainNetworkRouter(
         500: internalServerErrorResponseSchema
       }
     },
-    handler: blockchainNetworkController.createNetwork
+    handler: blockchainNetworkController.createNetwork,
+    preHandler: AuthMiddleware.authorizeRoles(['ADMIN'])
   })
 
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -112,7 +112,7 @@ export function blockchainNetworkRouter(
       params: updateBlockchainNetworkParamsSchema,
       body: updateBlockchainNetworkBodySchema,
       response: {
-        200: z.string(),
+        200: blockchainNetworkSchema,
         400: apiErrorResponseSchema,
         401: apiErrorResponseSchema,
         404: apiErrorResponseSchema,

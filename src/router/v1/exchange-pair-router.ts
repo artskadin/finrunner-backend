@@ -26,7 +26,10 @@ export function exchangePairRouter(
   done: HookHandlerDoneFunction
 ) {
   app.addHook('preHandler', AuthMiddleware.authenticate)
-  app.addHook('preHandler', AuthMiddleware.authorizeRoles(['ADMIN']))
+  app.addHook(
+    'preHandler',
+    AuthMiddleware.authorizeRoles(['ADMIN', 'OPERATOR'])
+  )
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: 'GET',
@@ -78,7 +81,8 @@ export function exchangePairRouter(
         500: internalServerErrorResponseSchema
       }
     },
-    handler: exchangePairController.createPair.bind(exchangePairController)
+    handler: exchangePairController.createPair,
+    preHandler: AuthMiddleware.authorizeRoles(['ADMIN'])
   })
 
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -115,7 +119,8 @@ export function exchangePairRouter(
         500: internalServerErrorResponseSchema
       }
     },
-    handler: exchangePairController.removePair.bind(exchangePairController)
+    handler: exchangePairController.removePair,
+    preHandler: AuthMiddleware.authorizeRoles(['ADMIN'])
   })
 
   done()

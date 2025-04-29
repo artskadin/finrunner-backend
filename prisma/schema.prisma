@@ -228,12 +228,18 @@ model CryptoWallet {
   @@map("Crypto_wallets")
 }
 
+enum ExchangePairStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
 model ExchangePair {
-  id               String    @id @default(uuid()) @db.Uuid
-  markupPercentage Decimal   @map("markup_percentage") @db.Decimal()
-  isActive         Boolean   @default(false) @map("is_active") @db.Boolean
-  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamp()
-  updatedAt        DateTime? @map("updated_at") @db.Timestamp()
+  id               String             @id @default(uuid()) @db.Uuid
+  markupPercentage Decimal            @default(0.0) @map("markup_percentage") @db.Decimal()
+  status           ExchangePairStatus @default(INACTIVE)
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamp()
+  updatedAt        DateTime           @updatedAt @map("updated_at") @db.Timestamp()
 
   // Связи для криптовалют
   fromCryptoAssetId String? @map("from_crypto_asset_id") @db.Uuid
@@ -243,10 +249,10 @@ model ExchangePair {
   fromFiatAssetId String? @map("from_fiat_asset_id") @db.Uuid
   toFiatAssetId   String? @map("to_fiat_asset_id") @db.Uuid
 
-  fromCryptoAsset CryptoAsset? @relation("FromCryptoAsset", fields: [fromCryptoAssetId], references: [id])
-  toCryptoAsset   CryptoAsset? @relation("ToCryptoAsset", fields: [toCryptoAssetId], references: [id])
-  fromFiatAsset   FiatAsset?   @relation("FromFiatAsset", fields: [fromFiatAssetId], references: [id])
-  toFiatAsset     FiatAsset?   @relation("ToFiatAsset", fields: [toFiatAssetId], references: [id])
+  fromCryptoAsset CryptoAsset? @relation("FromCryptoAsset", fields: [fromCryptoAssetId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  toCryptoAsset   CryptoAsset? @relation("ToCryptoAsset", fields: [toCryptoAssetId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  fromFiatAsset   FiatAsset?   @relation("FromFiatAsset", fields: [fromFiatAssetId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  toFiatAsset     FiatAsset?   @relation("ToFiatAsset", fields: [toFiatAssetId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   ratesHistory ExchangeRatesHistory[]
 
