@@ -14,7 +14,9 @@ class ExchangePairController {
   private preparePairToResponse(pair: ExchangePair) {
     return {
       ...pair,
-      markupPercentage: pair.markupPercentage.toString()
+      markupPercentage: pair.markupPercentage.toString(),
+      minAmount: pair.minAmount.toString(),
+      maxAmount: pair.maxAmount.toString()
     }
   }
 

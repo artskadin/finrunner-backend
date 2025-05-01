@@ -10,5 +10,10 @@ export const env = cleanEnv(process.env, {
   ENCRYPTION_KEY: str(),
   ALCHEMY_API_KEY: str(),
   ETH_MAINNET_PROVIDER_RPC_URL: str(),
-  ETH_TESTNET_PROVIDER_RPC_URL: str()
+  ETH_TESTNET_PROVIDER_RPC_URL: str(),
+  BYBIT_API_BASE_URL: str(),
+  BYBIT_API_KEY: str(),
+  BYBIT_API_SECRET: str(),
+  MARKET_DATA_FETCH_INTERVAL_SECONDS: str(),
+  MARKET_DATA_REDIS_EXPIRY_SECONDS: str()
 })

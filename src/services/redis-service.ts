@@ -1,27 +1,117 @@
 import Redis from 'ioredis'
-import { Envs } from '../envSettings'
+import { env } from '../envSettings/env'
+import { TickerData } from '../schemas/bybit-tickers-schema'
+
+const TICKER_PREFIX = 'market:ticker:'
+const OTP_PREFIX = 'otpTgId:'
+const OTP_EXPIRY_SECONDS = 180
 
 class RedisService {
-  private static instance: RedisService | null = null
-  private client: Redis
+  private readonly client: Redis
+  private isConnecting: boolean = false
+  private isConnected: boolean = false
+  private connectionPromise: Promise<void> | null = null
 
-  constructor(envs: Envs) {
+  constructor() {
     this.client = new Redis({
-      host: envs.REDIS_HOST || 'localhost',
-      port: parseInt(envs.REDIS_PORT || '6379')
+      host: env.REDIS_HOST,
+      port: parseInt(env.REDIS_PORT),
+      maxRetriesPerRequest: 3,
+      lazyConnect: true
     })
-    console.log('Redis connected')
+
+    this.setupListeners()
   }
 
-  public static getInstance(envs?: Envs) {
-    if (!RedisService.instance) {
-      if (!envs) {
-        throw new Error('Envs must be provided to initialize the RedisService')
-      }
-      RedisService.instance = new RedisService(envs)
+  private setupListeners() {
+    this.client.on('connect', () => {
+      console.log('Redis client connected successfully')
+    })
+
+    this.client.on('ready', () => {
+      console.log('Redis client ready to process commands')
+      this.isConnected = true
+      this.isConnecting = false
+    })
+
+    this.client.on('error', (error) => {
+      console.error('Redis client error:', error)
+      this.isConnected = false
+      this.isConnecting = false
+    })
+
+    this.client.on('close', () => {
+      console.warn('Redis client connection closed')
+      this.isConnected = false
+      this.isConnecting = false
+    })
+
+    this.client.on('end', () => {
+      console.warn('Redis client connection ended')
+      this.isConnected = false
+      this.isConnecting = false
+      this.connectionPromise = null
+    })
+  }
+
+  public async connect(): Promise<void> {
+    if (this.isConnected) {
+      return
     }
 
-    return RedisService.instance
+    if (this.isConnecting) {
+      return this.connectionPromise!
+    }
+
+    console.log('Connecting to Redis...')
+    this.isConnecting = true
+
+    this.connectionPromise = new Promise((res, rej) => {
+      const onError = (error: Error) => {
+        this.client.removeListener('ready', onReady)
+        this.client.removeListener('error', onError)
+        this.isConnecting = false
+        this.connectionPromise = null
+
+        console.error('Redis connection failed during initial connect.', error)
+
+        rej(error)
+      }
+      const onReady = () => {
+        this.client.removeListener('ready', onReady)
+        this.client.removeListener('error', onError)
+        this.connectionPromise = null
+
+        res()
+      }
+
+      this.client.once('ready', onReady)
+      this.client.once('error', onError)
+
+      this.client.connect().catch(onError)
+    })
+
+    return this.connectionPromise
+  }
+
+  public async disconnect(): Promise<void> {
+    if (this.client && this.client.status !== 'end') {
+      console.log('Disconnecting from Redis...')
+      await this.client.quit()
+    }
+    this.isConnected = false
+    this.isConnecting = false
+    this.connectionPromise = null
+  }
+
+  private async ensureConnected(): Promise<void> {
+    if (!this.isConnected && !this.isConnecting) {
+      await this.connect()
+    }
+
+    if (this.isConnecting) {
+      await this.connectionPromise
+    }
   }
 
   async saveOtpCode({
@@ -31,16 +121,107 @@ class RedisService {
     tgId: string
     otpCode: string
   }): Promise<void> {
-    await this.client.set(`otpTgId:${tgId}`, otpCode, 'EX', 180)
+    await this.ensureConnected()
+
+    const key = `${OTP_PREFIX}${tgId}`
+    try {
+      await this.client.setex(key, OTP_EXPIRY_SECONDS, otpCode)
+    } catch (err) {
+      throw err
+    }
   }
 
   async getOtpCode(tgId: string): Promise<string | null> {
-    return this.client.get(`otpTgId:${tgId}`)
+    await this.ensureConnected()
+
+    const key = `${OTP_PREFIX}${tgId}`
+
+    try {
+      return await this.client.get(key)
+    } catch (err) {
+      console.error(`Failed to get OTP code for tgId ${tgId}: ${err}`)
+      return null
+    }
   }
 
   async deleteOtpCode(tgId: string): Promise<void> {
-    this.client.del(`otpTgId:${tgId}`)
+    await this.ensureConnected()
+
+    const key = `${OTP_PREFIX}${tgId}`
+    try {
+      await this.client.del(key)
+    } catch (err) {
+      console.error(`Failed to delete OTP code for tgId ${tgId}: ${err}`)
+    }
+  }
+
+  async saveTickerData({
+    symbol,
+    data,
+    expirySeconds
+  }: {
+    symbol: string
+    data: TickerData
+    expirySeconds: number
+  }): Promise<void> {
+    await this.ensureConnected()
+
+    const key = `${TICKER_PREFIX}${symbol.toUpperCase()}`
+
+    try {
+      await this.client.setex(key, expirySeconds, JSON.stringify(data))
+    } catch (err) {
+      console.log(`Failed to save ticker data for symbol ${symbol}: ${err}`)
+    }
+  }
+
+  async saveMultipleTickes({
+    tickers,
+    expirySeconds
+  }: {
+    tickers: Record<string, TickerData>
+    expirySeconds: number
+  }): Promise<void> {
+    await this.ensureConnected()
+
+    if (Object.keys(tickers).length === 0) {
+      return
+    }
+
+    try {
+      const pipeLine = this.client.pipeline()
+
+      for (const symbol in tickers) {
+        const key = `${TICKER_PREFIX}${symbol.toUpperCase()}`
+
+        pipeLine.setex(key, expirySeconds, JSON.stringify(tickers[symbol]))
+      }
+
+      await pipeLine.exec()
+    } catch (err) {
+      console.error(`Failed to save multiple tickers: ${err}`)
+    }
+  }
+
+  async getTickerData(symbol: string): Promise<TickerData | null> {
+    await this.ensureConnected()
+
+    const key = `${TICKER_PREFIX}${symbol.toUpperCase()}`
+
+    try {
+      const data = await this.client.get(key)
+
+      return data ? (JSON.parse(data) as TickerData) : null
+    } catch (err) {
+      console.log(`Failed to get ticker data for symbol ${symbol}: ${err}`)
+
+      return null
+    }
+  }
+
+  getClient(): Redis {
+    return this.client
   }
 }
 
-export const getRedisService = (envs?: Envs) => RedisService.getInstance(envs)
+export const redisService = new RedisService()

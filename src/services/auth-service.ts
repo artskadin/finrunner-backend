@@ -2,7 +2,7 @@ import { ApiError } from '../exceptions/api-error'
 import { userRepository } from '../repositories/user-repository'
 import { AuthorizeInput } from '../schemas/auth-schema'
 import { BaseService } from './base-service'
-import { getRedisService } from './redis-service'
+import { redisService } from './redis-service'
 import { tgBotService } from './tgbot-service'
 import { getTokenService } from './token-services'
 import { userService } from './user-service'
@@ -26,7 +26,6 @@ class AuthService extends BaseService {
       if (user) {
         const tgId = user.telegramId.toString()
 
-        const redisService = getRedisService()
         redisService.saveOtpCode({ tgId, otpCode })
 
         tgBotService.sendOtp({ tgId, otpCode })
@@ -50,7 +49,6 @@ class AuthService extends BaseService {
         throw ApiError.TelegramUsernameNotFound(telegramUsername)
       }
 
-      const redisService = getRedisService()
       const tgId = user.telegramId
 
       const otpCodeFromRedis = await redisService.getOtpCode(tgId)
