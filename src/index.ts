@@ -25,7 +25,6 @@ import { kafkaServie } from './services/kafka/kafka-service'
 import { kafkaEventHandlerRegistry } from './services/kafka/event-handler-registry'
 import { UpdateUserFromTgBotEventHandler } from './services/kafka/event-handlers'
 import { KafkaTopics } from './services/kafka/kafka-topics'
-import { getRedisService } from './services/redis-service'
 import { ApiError } from './exceptions/api-error'
 import { getTokenService } from './services/token-services'
 import { AuthMiddleware } from './middlewares/auth-middleware'
@@ -37,6 +36,11 @@ import { env } from './envSettings/env'
 import { schemas } from './schemas'
 import { version } from '../package.json'
 import { cryptoAssetRouter } from './router/v1/crypto-asset-router'
+import { redisService } from './services/redis-service'
+import {
+  getMarketDataService,
+  initializeMarketDataService
+} from './services/market-data-service'
 
 const options = {
   schema,
@@ -107,7 +111,9 @@ app.setErrorHandler((error, req, reply) => {
 
 app.addHook('onReady', async () => {
   try {
-    const redisService = getRedisService(envs)
+    await redisService.connect()
+    initializeMarketDataService()
+
     const tokenService = getTokenService(envs)
     const encryptionService = getEncryptionService(envs)
 
@@ -122,6 +128,17 @@ app.addHook('onReady', async () => {
   } catch (err) {
     app.log.error(err)
     process.exit(1)
+  }
+})
+
+app.addHook('onClose', async () => {
+  try {
+    const marketDataService = getMarketDataService()
+    marketDataService.stop()
+
+    await redisService.disconnect()
+  } catch (err) {
+    app.log.error(err)
   }
 })
 

@@ -238,6 +238,8 @@ model ExchangePair {
   id               String             @id @default(uuid()) @db.Uuid
   markupPercentage Decimal            @default(0.0) @map("markup_percentage") @db.Decimal()
   status           ExchangePairStatus @default(INACTIVE)
+  minAmount        Decimal            @default(0.0) @map("min_amount") @db.Decimal
+  maxAmount        Decimal            @default(0.0) @map("max_amount") @db.Decimal
   createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamp()
   updatedAt        DateTime           @updatedAt @map("updated_at") @db.Timestamp()
 
