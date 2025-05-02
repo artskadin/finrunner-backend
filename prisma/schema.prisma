@@ -121,7 +121,7 @@ model FiatProvider {
   name      String
   type      FiatProviderType
   createdAt DateTime         @default(now()) @map("created_at") @db.Timestamp()
-  updatedAt DateTime?        @map("updated_at") @db.Timestamp()
+  updatedAt DateTime         @updatedAt @map("updated_at") @db.Timestamp()
 
   currencies FiatAsset[]
 

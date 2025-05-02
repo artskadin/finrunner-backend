@@ -1,7 +1,7 @@
 import { RestClientV5 } from 'bybit-api'
-import { env } from '../envSettings/env'
+import { env } from '../../envSettings/env'
 
-class ByBitService {
+class ByBitExchangeService {
   private client: RestClientV5
 
   constructor() {
@@ -40,4 +40,4 @@ class ByBitService {
   }
 }
 
-export const byBitService = new ByBitService()
+export const byBitExchangeService = new ByBitExchangeService()

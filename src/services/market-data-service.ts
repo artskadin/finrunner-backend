@@ -1,8 +1,8 @@
 import shedule from 'node-schedule'
 import { cryptoAssetService } from './crypto-asset-service'
-import { byBitService } from './by-bit-service'
-import { TickerData } from '../schemas/bybit-tickers-schema'
 import { redisService } from './redis-service'
+import { byBitExchangeService } from './exchanges/by-bit-exchange-service'
+import { TickerData } from '../schemas/bybit-tickers-schema'
 import { env } from '../envSettings/env'
 
 const FETCH_INTERVAL_SECONDS =
@@ -101,7 +101,7 @@ class MarketDataService {
       return
     }
 
-    const tickers = await byBitService.getSpotTickers(this.pairsToWatch)
+    const tickers = await byBitExchangeService.getSpotTickers(this.pairsToWatch)
 
     if (!tickers) {
       return

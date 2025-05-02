@@ -17,6 +17,14 @@ export class ApiError extends Error {
     this.details = details
   }
 
+  public static InternalServerError(text?: string) {
+    return new ApiError(
+      500,
+      'INTERNAL_SERVER_ERROR',
+      text ?? 'Internal server error'
+    )
+  }
+
   public static Unauthorized() {
     return new ApiError(401, 'UNAUTHORIZED', 'User is not authorized')
   }
