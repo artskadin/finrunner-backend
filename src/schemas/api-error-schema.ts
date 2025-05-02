@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 const commonApiErrorTypeSchema = z.union([
   z.literal('BAD_REQUEST'),
+  z.literal('INTERNAL_SERVER_ERROR'),
   z.literal('UNAUTHORIZED'),
   z.literal('INVALID_ACCESS_TOKEN'),
   z.literal('INVALID_REFRESH_TOKEN'),
@@ -27,14 +28,25 @@ const exchangePairApiErrorTypeSchema = z.union([
   z.literal('SHOULD_ONLY_BE_TO_FIAT_OR_TO_CRYPTO')
 ])
 
+const exchangeApiErrorTypeSchema = z.union([
+  z.literal('EXCHANGE_PAIR_NOT_FOUND'),
+  z.literal('INACTIVE_EXCHANGE_PAIR'),
+  z.literal('COULD_NOT_DETERMINE_CURRENCY'),
+  z.literal('MARKET_RATE_NOT_AVAILABLE'),
+  z.literal('FAILED_TO_FETCH_CRYPTO_ASSETS'),
+  z.literal('FAILED_TO_FETCH_FIAT_ASSETS')
+])
+
 export const apiErrorTypeSchema = z
   .union([
     commonApiErrorTypeSchema,
     blockchainNetworkApiErrorTypeSchema,
-    exchangePairApiErrorTypeSchema
+    exchangePairApiErrorTypeSchema,
+    exchangeApiErrorTypeSchema
   ])
   .describe('Error type code')
 
+export type ExchangeApiErrorType = z.infer<typeof exchangeApiErrorTypeSchema>
 export type BlockchainNetworkApiErrorType = z.infer<
   typeof blockchainNetworkApiErrorTypeSchema
 >
